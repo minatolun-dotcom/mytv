@@ -22,6 +22,8 @@ from the symptom column. The procedure itself is in [MYTV.md](MYTV.md).
 | 14 | Everything reverts after unplugging the TV | Firmware's `FallbackHome` re-enables 60 packages on a **cold** boot | Use `hidden_apps` for durability, not `pm disable-user` alone |
 | 15 | `git push` → `could not read Username for 'https://github.com'` | `credential.helper store` reads `~/.git-credentials`, not the repo's | `git config credential.helper "store --file=<repo>/.git-credentials"` |
 | 16 | `git checkout -b main FETCH_HEAD` landed on an old commit | Bare `FETCH_HEAD` picked a non-HEAD ref after a multi-ref fetch | `git checkout -B main upstream/main` |
+| 17 | `pm install -r` → `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | The installed APK was signed with a different debug key than this Docker build | Rebuild with the host's key (`HOST_KEY_DIR=…`) if it matches, or uninstall and re-push the config |
+| 18 | `settings_key_panel: true` changed nothing on the gear | Only `HomeKeyService` and `handleSettingsKey` read it; the on-screen gear's click listener called full Settings unconditionally | One-line change in `MainActivity`, which needs a rebuild — a config push can never do it |
 
 ---
 

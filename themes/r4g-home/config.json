@@ -27,5 +27,6 @@
     "com.mk.tv.meeting.service",
     "com.mk.tv.timeclock",
     "com.creative.fastscreen.tv"
-  ]
+  ],
+  "settings_key_panel": true
 }
