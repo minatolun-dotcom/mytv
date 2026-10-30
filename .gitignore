@@ -21,3 +21,7 @@ bench-results/
 *.aab
 launcher/hs_err_pid*.log
 launcher/replay_pid*.log
+
+# This fork: git credentials for the mytv remote stay local
+secrets
+.git-credentials

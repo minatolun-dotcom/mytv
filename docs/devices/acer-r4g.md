@@ -98,3 +98,31 @@ factory-reset a Xiaomi MiTV-MOSR4, see [TROUBLESHOOTING](../TROUBLESHOOTING.md))
 ```sh
 tools/tv.py 'pm enable --user 0 com.google.android.apps.tv.launcherx'
 ```
+
+## What worked on a second R4G (this fork, 2026-10-30)
+
+A second unit (same build, incremental 5597) reached this note with a black screen and a bootloop: Home was
+bouncing between `setupwraith/.RecoveryActivity` and a third-party launcher, `launcherx`'s `HomeActivity`
+had been component-disabled, and `cmd shortcut get-default-launcher` still named the third-party launcher
+while `cmd package resolve-activity` answered `launcherx` (its filter has `priority=2`). Re-enabling
+`launcherx` alone was not enough, and disabling it reproduced the loop above.
+
+What settled it, in this order:
+
+1. **Disable `setupwraith` first, then start the new launcher, then disable `launcherx`, then set the home
+   preference last** — the order `launcher/build-and-install.sh` uses. Android drops the preference whenever
+   the set of HOME apps changes, so setting it before the disables is what left Home on the wrong package.
+2. **Put `launcherx` and `setupwraith` back enabled** and leave Home on `launcherx`, exactly as the section
+   above prescribes — the state that survives a cold boot.
+3. **`HomeKeyService` + `stock_home_redirect`** (`themes/r4g-home/config.json`, pushed with `tools/theme.sh`)
+   so the remote's Home button opens the new launcher while `launcherx` stays stock Home. The redirect fires
+   from `TYPE_WINDOW_STATE_CHANGED`, so it only arms once `loadConfig()` has read `config.json`: before that,
+   a Home press lands on `launcherx` and looks like a failure.
+4. **`hidden_apps` for what comes back.** The boot re-enable list means a disable-only list loses ground at
+   every cold power cycle; the tiles stay gone because they are hidden rather than disabled.
+
+Verified after the run: HOME key opens the new launcher (3/3), uptime climbing across a 60 s watch with
+`sys.boot_completed=1`, zero `RecoveryActivity` starts in a cleared `logcat`, empty crash buffer.
+
+The full runbook for this set is [`MYTV.md`](../../MYTV.md) at the repository root, and the debloat list is
+[`examples/acer-r4g-gtv/`](../../examples/acer-r4g-gtv/).

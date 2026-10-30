@@ -1,0 +1,82 @@
+# Debloat list: Acer R4G 50" (MOKA R4_GTV, Realtek rtd2851m), Google TV 14, build UKR1.260308 (incremental 5597)
+#
+# Apply:   TV_HOST=192.168.1.19 tools/disable.sh examples/acer-r4g-gtv/debloat.txt
+# Undo:    TV_HOST=192.168.1.19 tools/restore.sh  examples/acer-r4g-gtv/debloat.txt
+# Run it with TVINPUT_ALLOW=1: this firmware's dumpsys prints neither a requested nor a granted
+# permission block for any package, so the input-driver guard fails closed and skips six harmless ones
+# (hotstar, sonyliv, mxtech, graymatrix, htmlviewer, wallpaperbackup). The check that settles it:
+#   tools/tv.py 'pm query-services --components -a android.media.tv.TvInputService'
+# answers only com.realtek.* here, and none of those are in this list.
+# com.realtek.tv is listed but always skipped by the handlers guard: it owns .SelectInputActivity and
+# answers ACTION_VIEW on the passthrough channel URI, so with it disabled the launcher's Inputs tiles
+# go dead (#321). It is kept out of Home with hidden_apps in themes/r4g-home/config.json instead.
+# Everything is DISABLED (pm disable-user), never uninstalled, so restore.sh puts it all back.
+#
+# Built from the repo's two lists for this exact platform:
+#   examples/acer-ar55ar2851udpro/debloat.txt   (Acer R4, same UKR1.260308 build)
+#   examples/panasonic-4ktv-3mup/debloat.txt    (MOKA R4_GTV, same board + build as this set)
+#   docs/devices/acer-r4g.md                    (this firmware's boot-time re-enable list)
+#
+# KEPT on purpose, do not add:
+#   - Your apps: io.gh.reisxd.tizentube.cobalt (TizenTube), st.atlantic.app (Atlantic), net.mrowser (Mrowser)
+#   - com.gathin.tvhome (CleanYourTV launcher)
+#   - launcherx + setupwraith: this firmware re-enables setupwraith at every cold boot and its
+#     RecoveryActivity then takes Home and crash-loops (docs/devices/acer-r4g.md)
+#   - com.realtek.tv* / com.realtek.dtv / com.realtek.dtmb / com.realtek.atv: Live TV, HDMI, AV, tuners
+#   - Key handlers: com.realtek.keyinterceptserver, com.realtek.android.globalkeyhandler,
+#     com.apps.android.globalkeyhandler, com.mk.tv.fivekey, com.apps.smartkey, com.apps.virtualkey,
+#     com.apps.bluetoothremote, com.apps.sys (SystemProvider), com.mk.service.tvmidware
+#   - Firmware updates: com.apps.ota, com.apps.authota, com.realsil.ota, com.google.android.tv.dfuservice
+#   - Assistant (katniss), Chromecast (mediashell), Play Store/Services, Gboard, TalkBack, HbbTV
+#   - com.apps.factory.ui, com.realtek.factorytools (never started), com.apps.biz.mt / com.apps.plugins (unclear)
+#
+# Note: entries in docs/devices/acer-r4g.md's 20-package boot list only stay disabled until the next
+# cold boot (com.apps.ota family, esticker, gdpr, scast, fastscreen, meeting.service, audiolink,
+# timeclock, tvmanager, play.games, feedback, ...). They are still worth disabling for this session;
+# hidden_apps in the launcher config keeps any that come back off Home.
+
+# --- Telemetry, ads, consent agents and auto-installs ---
+com.android.adservices.api                 # Google ad services
+com.android.ondevicepersonalization.services
+com.android.federatedcompute.services
+com.google.android.feedback                # Google usage/crash feedback
+com.android.tv.feedbackconsent             # already disabled on this set
+android.autoinstalls.config.scbc.device    # Play auto-installs of partner apps (already disabled)
+com.apps.function.gdpr                     # vendor data-consent agent
+com.apps.mk.wd                             # boot receiver with ad-click activities
+
+# --- Background services a TV does not need ---
+com.android.healthconnect.controller
+com.android.health.connect.backuprestore
+com.android.dreams.basic                   # basic "Colors" screensaver
+com.google.android.partnersetup             # Google partner setup / RLZ pings
+com.google.android.play.games
+com.apps.wifihotspot                       # TV as a Wi-Fi hotspot (already disabled)
+com.android.htmlviewer
+com.android.backupconfirm
+com.android.sharedstoragebackup
+com.android.wallpaperbackup
+
+# --- OEM demo, signage and cleaner apps ---
+com.apps.esticker                          # demo sticker overlay
+com.apps.esticker3
+com.apps.tvmanager                         # vendor TV manager / cleaner
+com.mk.tv.meeting.service                  # digital-signage service
+com.apps.function.audiolink
+com.mk.tv.timeclock                        # WorldClock
+com.apps.scast                             # SCast mirroring receiver (Chromecast kept)
+com.creative.fastscreen.tv                 # FastCast Miracast receiver
+
+# --- Streaming apps preloaded / pushed by Google TV setup ---
+com.google.android.youtube.tv              # YouTube
+com.netflix.ninja                          # Netflix
+com.amazon.amazonvideo.livingroom          # Prime Video
+in.startv.hotstar                          # Hotstar
+com.sonyliv                                # SonyLIV
+com.mxtech.videoplayer.television          # MX Player
+com.graymatrix.did                         # ZEE5-related preload
+
+# --- Asked for: media player, meeting mode, Live TV ---
+com.apps.usbmediaplayer                    # USB media player
+com.apps.biz.mt                            # meeting mode app (tile: com.apps.biz.mt/.MainActivity)
+com.realtek.tv                             # Live TV app - see note: hosts the source menu, may be skipped

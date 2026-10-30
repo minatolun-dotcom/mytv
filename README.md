@@ -27,6 +27,36 @@
   <a href="docs/PRESS.md"><img src="docs/card-halloween.jpg" alt="360 TV models · 97 brands · 30 languages · 561 KB launcher. Featured in TechCrunch, TechRadar, Tom's Guide, Mashable, Android Authority, XDA, FlatpanelsHD, It's FOSS, Phandroid, GIGAZINE, Xataka, WinFuture, Frandroid, Macitynet, Techaeris, TechPP and 298 more: 314 articles from 44 countries. Before: stock Google TV home with a sponsored ad. After: the Clean Your TV launcher." width="800"></a>
 </p>
 
+## This fork: our TV
+
+This copy of [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) is personalised for one set —
+an **Acer R4G 50"** (MOKA `R4_GTV`, Google TV 14, `UKR1.260308`). Upstream documentation below is unchanged;
+everything specific to our TV is collected here:
+
+| | |
+|---|---|
+| **[MYTV.md](MYTV.md)** | The runbook. Clone, debloat, hand over Home, push the config, run the checks — the whole procedure, already proven on this unit. |
+| **[examples/acer-r4g-gtv/](examples/acer-r4g-gtv/)** | Our debloat list (36 packages) and the device notes: what is kept, what is disabled, and why. |
+| **[themes/r4g-home/](themes/r4g-home/)** | Our launcher config overlay: `stock_home_redirect` + `hidden_apps`. |
+| **[docs/devices/acer-r4g.md](docs/devices/acer-r4g.md)** | The cold-boot re-enable trap on this firmware, plus what fixed our unit. |
+
+Quick start for this TV:
+
+```sh
+git clone https://github.com/minatolun-dotcom/mytv.git && cd mytv
+python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt
+export TV_HOST=192.168.1.19
+TVINPUT_ALLOW=1 tools/disable.sh examples/acer-r4g-gtv/debloat.txt   # debloat
+tools/theme.sh themes/r4g-home                                       # launcher config
+```
+
+Kept apps: TizenTube, Atlantic, Mrowser. Disabled: YouTube, Netflix, Prime Video, Hotstar, SonyLIV,
+MX Player, the telemetry/consent agents and the OEM demo apps. One rule on this set — never disable
+`com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith`, or Home
+bootloops on the next cold boot.
+
+---
+
 ## Start here
 
 | You have | Go to |

@@ -1,0 +1,21 @@
+{
+  "stock_home_redirect": "com.google.android.apps.tv.launcherx",
+  "hidden_apps": [
+    "com.realtek.tv",
+    "com.apps.usbmediaplayer",
+    "com.apps.biz.mt",
+    "com.apps.ota",
+    "com.amazon.amazonvideo.livingroom",
+    "com.google.android.play.games",
+    "com.google.android.feedback",
+    "com.apps.esticker",
+    "com.apps.esticker3",
+    "com.apps.function.gdpr",
+    "com.apps.function.audiolink",
+    "com.apps.scast",
+    "com.apps.tvmanager",
+    "com.mk.tv.meeting.service",
+    "com.mk.tv.timeclock",
+    "com.creative.fastscreen.tv"
+  ]
+}
