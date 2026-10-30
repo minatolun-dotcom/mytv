@@ -24,6 +24,8 @@ from the symptom column. The procedure itself is in [MYTV.md](MYTV.md).
 | 16 | `git checkout -b main FETCH_HEAD` landed on an old commit | Bare `FETCH_HEAD` picked a non-HEAD ref after a multi-ref fetch | `git checkout -B main upstream/main` |
 | 17 | `pm install -r` → `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | The installed APK was signed with a different debug key than this Docker build | Rebuild with the host's key (`HOST_KEY_DIR=…`) if it matches, or uninstall and re-push the config |
 | 18 | `settings_key_panel: true` changed nothing on the gear | Only `HomeKeyService` and `handleSettingsKey` read it; the on-screen gear's click listener called full Settings unconditionally | One-line change in `MainActivity`, which needs a rebuild — a config push can never do it |
+| 19 | The network menu's first row (and the pill) says "Wi-Fi" instead of the network's name | Android redacts the SSID until **both** location permissions are granted **and** Location is on; this set had neither, and `settings put secure location_mode 3` read back `3` then reverted to `0` | `pm grant` `ACCESS_FINE_LOCATION` **and** `ACCESS_COARSE_LOCATION`, then `cmd location set-location-enabled true` (the `cmd` write sticks). Wi-Fi verbose logging shows the gate: `checkCallersLocationPermission(com.gathin.tvhome): ok` |
+| 20 | Home fell back to the stock launcher right after replacing the APK | `am force-stop com.gathin.tvhome` dropped `HomeKeyService` from `enabled_accessibility_services`, so nothing catches the Home key any more | Re-set it as [MYTV.md](MYTV.md) §5 does. `tools/theme.sh` already does this for you around its restart (`tools/theme_restart.py` saves and restores the service around the force-stop) |
 
 ---
 

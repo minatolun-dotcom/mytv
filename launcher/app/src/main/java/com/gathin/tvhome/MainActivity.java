@@ -33,6 +33,8 @@ import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
 import android.media.tv.TvInputManager;
 import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
@@ -79,6 +81,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -770,7 +774,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnInputs = findViewById(R.id.btnInputs);
         View btnSettings = findViewById(R.id.btnSettings);
         btnInputs.setOnClickListener(v -> showInputs());
-        btnWifi.setOnClickListener(v -> openNetworkPill());
+        // The dropdown the Inputs and Settings buttons have, so all three top-right buttons behave alike;
+        // the row at its foot still runs openNetworkPill(), and long-press still opens Wi-Fi settings.
+        btnWifi.setOnClickListener(v -> showNetworkMenu());
         btnVpn.setOnClickListener(v -> openVpnPill());
         btnWifi.setOnLongClickListener(v -> {
             open(systemIntent(Settings.ACTION_WIFI_SETTINGS));
@@ -2867,8 +2873,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 btnWifi.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
             }
             ColorStateList tint = online ? wifiOnlineTint : wifiPlainTint;
-            // wifi_status_warnings: orange while connected but not validated (a captive portal), red while offline.
-            if (wifiNoInternetTint != null) tint = !online ? wifiOfflineTint : validated ? wifiOnlineTint : wifiNoInternetTint;
+            // wifi_status_warnings: green once Android has reached the internet, orange whenever a connection
+            // exists but is not usable yet (a captive portal, a TV still asking for an address, or Wi-Fi on
+            // with nothing associated), red only when the radio itself is off. "Not connected" used to read
+            // as red, which looked like a fault and flashed through every reconnect.
+            if (wifiNoInternetTint != null) tint = !online
+                    ? (wifiRadioOn() ? wifiNoInternetTint : wifiOfflineTint)
+                    : validated ? wifiOnlineTint : wifiNoInternetTint;
             if (wifiOnlineTint != null && btnWifi.getCompoundDrawableTintList() != tint) {
                 btnWifi.setCompoundDrawableTintList(tint);
             }
@@ -2886,8 +2897,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean wifiIconOnly;
     /** config.xml wifi_status_color: the Wi-Fi icon's green while online and its usual pill colours; null while off. */
     private ColorStateList wifiOnlineTint, wifiPlainTint;
-    /** wifi_status_warnings (with wifi_status_color): orange without internet, red offline; null while off. */
+    /** wifi_status_warnings (with wifi_status_color): orange while the connection is not usable yet (no
+     *  internet, still connecting, or Wi-Fi on but not associated), red while the radio is off; null while off. */
     private ColorStateList wifiNoInternetTint, wifiOfflineTint;
+
+    /** wifi_status_warnings: whether the Wi-Fi radio is on, which separates "not connected yet" (orange)
+     *  from "Wi-Fi off" (red) while there is no network to judge the state by. Read only then. */
+    private boolean wifiRadioOn() {
+        try {
+            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            return wm != null && wm.getWifiState() == WifiManager.WIFI_STATE_ENABLED;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
     /** The app library button in the top bar (library_button). */
     private View btnLibraryTop;
     /** The open library came from that button: closing it returns there instead of scrolling to the grid's end. */
@@ -2983,8 +3006,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     /**
-     * The network pill opens the VPN app when one is configured and installed, otherwise Wi-Fi settings. With
-     * vpn_pill the VPN app has its own pill, so this one always opens Wi-Fi settings.
+     * The network menu's action row, and what a hold on the pill opens directly: the VPN app when one is
+     * configured and installed, otherwise Wi-Fi settings. With vpn_pill the VPN app has its own pill, so
+     * this one always opens Wi-Fi settings.
      */
     private void openNetworkPill() {
         Intent i = vpnPill ? null : vpnAppIntent();
@@ -3482,6 +3506,146 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         rows.addView(row);
         return row;
+    }
+
+    /** A read-only row in the network menu: the shape of an Inputs row, with nothing to press. */
+    private View addInfoRow(LinearLayout rows, int iconRes, String title, String status) {
+        View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        ((ImageView) row.findViewById(R.id.icon)).setImageResource(iconRes);
+        ((TextView) row.findViewById(R.id.title)).setText(title);
+        TextView statusView = row.findViewById(R.id.status);
+        if (status == null) statusView.setVisibility(View.GONE);
+        else statusView.setText(status);
+        row.findViewById(R.id.dot).setVisibility(View.GONE);
+        // item_input is focusable and clickable in layout; nothing here acts, so nothing here takes focus
+        // away from the one row that does.
+        row.setFocusable(false);
+        row.setClickable(false);
+        rows.addView(row);
+        return row;
+    }
+
+    /**
+     * The network pill's dropdown, in the shape of the Inputs and Settings menus: the connection's name
+     * and state, its band and link speed, the TV's own address, then the row that opens what the pill
+     * opened before (a configured vpn_app, or Wi-Fi settings).
+     *
+     * Every row but the last is read-only: a launcher may read the connection (ACCESS_WIFI_STATE and
+     * ACCESS_NETWORK_STATE, both normal) but switching networks would need a permission surface this app
+     * does not have, so the row that can act sends you to the TV's own Wi-Fi settings. The band, speed and
+     * address are readable without location; the network name is not (Android 10 redacts the SSID until
+     * ACCESS_FINE_LOCATION is granted and Location is on, which is why the pill can fall back to "Wi-Fi").
+     */
+    private void showNetworkMenu() {
+        View anchor = btnWifi;
+        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        final PopupWindow popup = glassPopup(panel, (int) (220 * density));
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        boolean online = false, validated = false, wireless = false, ethernet = false;
+        Network wired = null, wifiNet = null;
+        // All networks, not just the active one: with a VPN up the active network is the VPN itself.
+        Network[] nets = cm != null ? cm.getAllNetworks() : new Network[0];
+        for (Network net : nets) {
+            NetworkCapabilities caps = cm.getNetworkCapabilities(net);
+            if (caps == null || caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) continue;
+            if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) continue;
+            online = true;
+            // Android reached the internet through it; a captive portal stays unvalidated until login.
+            if (caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) validated = true;
+            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) { ethernet = true; wired = net; }
+            if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) { wireless = true; wifiNet = net; }
+        }
+
+        String ssid = null, band = null, speed = null;
+        int rssi = 0;
+        boolean haveInfo = false;
+        try {
+            WifiManager wm = wireless ? (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE) : null;
+            WifiInfo info = wm != null ? wm.getConnectionInfo() : null;
+            if (info != null) {
+                haveInfo = true;
+                rssi = info.getRssi();
+                band = band(info.getFrequency());
+                if (info.getLinkSpeed() > 0) speed = info.getLinkSpeed() + " Mbps";
+                ssid = info.getSSID();
+                if (ssid != null) {
+                    ssid = ssid.replace("\"", "").trim();
+                    if (ssid.isEmpty() || ssid.contains("unknown") || "0x".equals(ssid)) ssid = null;
+                }
+            }
+        } catch (Exception ignored) {
+            // The same guard updateWifiLabel carries: a firmware may throw where the AOSP docs do not.
+        }
+
+        int linkIcon = ethernet ? R.drawable.ic_ethernet : R.drawable.ic_wifi;
+        String name;
+        if (ethernet) name = getString(R.string.ethernet);
+        else if (ssid != null) name = ssid;
+        else if (wireless || !online) name = getString(R.string.wifi);
+        else name = getString(R.string.quick_network);   // online some other way (USB tethering)
+        String state = getString(!online ? R.string.offline : validated ? R.string.connected : R.string.no_internet);
+        if (haveInfo && online && rssi > -100) state += " \u00B7 " + signalPercent(rssi) + "%";
+        addInfoRow(rows, linkIcon, name, state);
+        // Band and link speed: only while the Wi-Fi stack has actually answered for a connection. Each
+        // row carries its own mark - a radiating point for the band, a globe for the address - so a
+        // glance tells the rows apart without reading them.
+        if (band != null) addInfoRow(rows, R.drawable.ic_broadcast, band, speed);
+        String address = addressOf(cm, ethernet ? wired : wireless ? wifiNet : null);
+        if (address != null) addInfoRow(rows, R.drawable.ic_ip, address, null);
+
+        // What the pill itself used to open, so nothing reachable before this menu is lost behind it.
+        Intent target = vpnPill ? null : vpnAppIntent();
+        String actionLabel = getString(R.string.wifi_settings);
+        if (target != null) {
+            ResolveInfo resolved = getPackageManager().resolveActivity(target, 0);
+            CharSequence label = resolved != null ? resolved.loadLabel(getPackageManager()) : null;
+            if (!TextUtils.isEmpty(label)) actionLabel = label.toString();
+        }
+        addSeparator(rows);
+        // The gear when the row opens settings, a lock when vpn_app takes it there instead.
+        addInputRow(rows, popup, target != null ? R.drawable.ic_lock : R.drawable.ic_settings,
+                actionLabel, -1, this::openNetworkPill);
+
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max((int) (220 * density), Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
+        // The pill sits near the right edge, so the menu grows inwards (left in LTR, right in Hebrew),
+        // the way the Settings menu grows inwards from the gear beside it.
+        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar) ? Gravity.START : Gravity.END);
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            View child = rows.getChildAt(i);
+            if (child.getVisibility() == View.VISIBLE && child.isFocusable()) { child.requestFocus(); break; }
+        }
+    }
+
+    /** The band a Wi-Fi frequency belongs to, or null for one no phone or TV uses (the row is dropped). */
+    private static String band(int mhz) {
+        if (mhz >= 2400 && mhz < 2500) return "2.4 GHz";
+        if (mhz >= 4900 && mhz < 5900) return "5 GHz";
+        if (mhz >= 5925 && mhz < 7125) return "6 GHz";
+        return null;
+    }
+
+    /** 0-100 from the RSSI in dBm: -50 dBm and better reads as full, -100 dBm and worse as empty. */
+    private static int signalPercent(int rssi) {
+        return Math.max(0, Math.min(100, (rssi + 100) * 2));
+    }
+
+    /** The TV's own address on that network: IPv4 where there is one, otherwise a usable IPv6, never a
+     *  loopback or link-local one; null while nothing is connected (the row is dropped). */
+    private String addressOf(ConnectivityManager cm, Network net) {
+        if (cm == null || net == null) return null;
+        LinkProperties lp = cm.getLinkProperties(net);
+        if (lp == null) return null;
+        String v6 = null;
+        for (LinkAddress entry : lp.getLinkAddresses()) {
+            InetAddress address = entry.getAddress();
+            if (address.isLoopbackAddress() || address.isLinkLocalAddress()) continue;
+            if (address instanceof Inet4Address) return address.getHostAddress();
+            if (v6 == null) v6 = address.getHostAddress();
+        }
+        return v6;
     }
 
     // ---- launcher settings and module cards -------------------------------------------------------

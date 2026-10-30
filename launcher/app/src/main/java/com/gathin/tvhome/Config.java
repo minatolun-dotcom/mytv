@@ -248,7 +248,8 @@ final class Config {
     final boolean handleViewInputs;
     /** Hold OK on a tile opens a menu (Move, Remove from Home, App info) instead of App info (config.xml / theme tile_menu). */
     final boolean tileMenu;
-    /** With wifi_status_color, the icon orange while connected without internet (a captive portal) and red while offline (config.xml, wifi_status_warnings). */
+    /** With wifi_status_color, the icon orange while a connection exists but is not usable yet (no internet, still
+     *  connecting, or Wi-Fi on with nothing associated) and red while the Wi-Fi radio is off (config.xml, wifi_status_warnings). */
     final boolean wifiStatusWarnings;
     /** Apps shown as round logo buttons in the top bar, left of the network pill, and no longer as tiles (config.xml, top_bar_apps). */
     final List<String> topBarApps;

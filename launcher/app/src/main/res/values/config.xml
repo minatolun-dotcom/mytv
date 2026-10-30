@@ -261,14 +261,14 @@
     <!-- The date and the line between the clock and the date in the clock's full white instead of dimmed. Can also be
          set with "header_white" in a theme. -->
     <bool name="header_white">false</bool>
-    <!-- Optional VPN app the network pill opens (hold the pill for Wi-Fi settings), e.g. the package of the
-         VPN you use. Empty: the pill opens Wi-Fi settings. The green VPN badge shows for any VPN either way;
+    <!-- Optional VPN app the network menu's action row opens (and a hold on the pill), e.g. the package of the
+         VPN you use. Empty: the action row opens Wi-Fi settings. The green VPN badge shows for any VPN either way;
          with an app set here, a red "VPN off" badge also shows while no VPN is up. -->
     <string name="vpn_app" translatable="false"></string>
     <!-- The VPN as its own pill after the network pill, instead of a badge inside it: solid green with a lock while a
          VPN is up, solid red "VPN off" while none is and vpn_app is installed. Pressing it opens vpn_app (without it,
-         the App library, or VPN settings when app_library is off), and the network pill then always opens Wi-Fi
-         settings. Hidden while no VPN is up and vpn_app is empty or not installed, and with top_menu. It keeps its
+         the App library, or VPN settings when app_library is off), and the network menu's action row then always
+         opens Wi-Fi settings. Hidden while no VPN is up and vpn_app is empty or not installed, and with top_menu. It keeps its
          label with icon_only_buttons, since the red state has no icon. A VPN app's kill switch keeps a VPN up while
          the app says disconnected (it holds the tunnel to block traffic), so the pill stays green then. Can also be
          set with "vpn_pill" in a theme. -->
@@ -316,9 +316,11 @@
          the focused pill either way), so the connection shows at a glance, also as an icon-only button. Can also be
          set with "wifi_status_color": true in a theme's config.json. -->
     <bool name="wifi_status_color">false</bool>
-    <!-- With wifi_status_color: the icon orange while the TV is connected but Android has not reached the internet
-         through it (a hotel or holiday-park Wi-Fi waiting for its login page) and red while it is offline, instead
-         of white for both. Can also be set with "wifi_status_warnings": true in a theme's config.json. -->
+    <!-- With wifi_status_color: the icon orange while a connection exists but is not usable yet - the TV is
+         connected but Android has not reached the internet through it (a hotel or holiday-park Wi-Fi waiting for
+         its login page), still bringing a connection up, or on with nothing associated - and red only while the
+         Wi-Fi radio itself is off, instead of white for both. Can also be set with "wifi_status_warnings": true
+         in a theme's config.json. -->
     <bool name="wifi_status_warnings">false</bool>
     <!-- The app library as a round button in the top bar, beside Settings (app_library must be on too). -->
     <bool name="library_button">false</bool>

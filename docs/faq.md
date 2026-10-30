@@ -81,7 +81,7 @@ every list keeps. The paths are Google TV's; other Android TV builds move some o
 - **Settings → Privacy → Ads**: delete the advertising ID, or turn on Opt out of Ads Personalization. On
   Android TV it is under About → Legal information → Ads (in Device Preferences on some sets).
 - **Settings → Privacy → Location** off. The launcher's network pill may then say "Wi-Fi" instead of the
-  network's name.
+  network's name, and so may the first row of the menu the pill opens.
 - **Settings → Privacy → Usage & diagnostics** off, before the debloat. On a Chromecast with Google TV 4K
   the page comes from setupwraith, which most Google TV lists disable for the launcher swap, and on a
   [Hisense 50A6H4](../examples/hisense-smarttv-4k-ffm-android11/debloat.txt) it opened nothing after the

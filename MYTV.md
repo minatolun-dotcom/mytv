@@ -91,6 +91,11 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
   listed (Settings, Play Store, …) still appears in the grid below the dock; `missing apps are
   skipped`, so a package that is later uninstalled cannot break the dock.
 - `home_idle_clock_minutes` → `10`: the clock screensaver after 10 idle minutes on Home (`0` = off).
+- `dock_opacity` → `30`: the dock band at 30% opacity, so the wallpaper shows through it. Picking 100/70/50/30
+  in Launcher settings still wins, until the next run of this command clears the pick.
+- `wifi_status_color` + `wifi_status_warnings` → the Wi-Fi icon tints with the connection: **green** online,
+  **orange** while a connection exists but is not usable yet (no internet, still connecting, or Wi-Fi on with
+  nothing associated), **red** only while the Wi-Fi radio is off.
 
 ### 4b. System screensaver: only CleanYourTV's clock
 
@@ -118,6 +123,22 @@ tools/tv.py 'cmd package query-services --brief -a android.service.dreams.DreamS
 only lasts until a power cycle; not being the selected component is what keeps it from running.
 To put the stock screensaver back: `settings put secure screensaver_components
 com.google.android.apps.tv.dreamx/.service.Backdrop`.
+
+### 4c. The network menu needs Location to show the network's name
+
+Pressing the Wi-Fi icon opens a menu (name and state, band and link speed, the TV's address, then a row for
+Wi-Fi settings). Every row but the name reads without Location; Android redacts the SSID until **both**
+location permissions are granted and Location is on, so the name falls back to "Wi-Fi" without this:
+
+```sh
+tools/tv.py 'pm grant com.gathin.tvhome android.permission.ACCESS_FINE_LOCATION
+pm grant com.gathin.tvhome android.permission.ACCESS_COARSE_LOCATION
+cmd location set-location-enabled true'
+```
+
+Use `cmd location set-location-enabled` — on this set `settings put secure location_mode 3` reads back `3`
+and then reverts to `0` (ISSUES.md 19). Prove the Wi-Fi service accepts us:
+`tools/tv.py 'logcat -d | grep checkCallersLocationPermission | tail -1'` → `com.gathin.tvhome: ok`.
 
 ## 5. Home key service
 

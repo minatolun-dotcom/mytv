@@ -23,7 +23,10 @@ the way every folder in [`themes/`](../) is.
 | `icon_only_buttons` | `true` | Wi-Fi and Settings as round icon buttons; Inputs keeps its label. |
 | `icon_only_inputs` | `true` | Inputs round too — it has its own key, `icon_only_buttons` does not cover it. |
 | `wifi_label_width` | `0` | Icon only, no network name. **Pinned deliberately:** `Config` reads this from the installed APK's resources *before* overlaying `config.json`, and that build's default is non-zero, so the Wi-Fi pill kept its label until the value was written here. |
+| `wifi_status_color` | `true` | The Wi-Fi icon tints with the connection instead of always white: green while online, white while it is not (needs a rebuild, see below). |
+| `wifi_status_warnings` | `true` | Refines the tint: orange while a connection exists but is not usable yet — no internet, still connecting, or Wi-Fi on with nothing associated — and red only while the Wi-Fi radio is off, so a reconnect does not flash red. |
 | `settings_key_panel` | `true` | Settings opens the small glass panel (TV settings, Display, Network, Apps, Launcher settings) instead of the full TV Settings. The remote's Settings key already reads this; the on-screen gear needs the rebuilt APK below. |
+| `dock_opacity` | `30` | The dock band at 30% opacity, so the wallpaper shows through it. A value picked in Launcher settings still wins until the next `tools/theme.sh` push, which clears the pick (100, 70, 50 or 30 are its options). |
 | `stock_home_redirect` | `com.google.android.apps.tv.launcherx` | Stock Home stays on `launcherx` — this firmware re-enables it every cold boot — and sends its home screen straight back to this launcher. |
 | `home_idle_clock_minutes` | `10` | Clock screensaver after 10 idle minutes on Home (`0` = off). |
 | `hidden_apps` | 16 packages | Live TV, USB media player, meeting mode, System upgrade, and everything the firmware re-enables at a **cold** boot (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a reboot; `pm disable-user` alone does not. |

@@ -86,6 +86,8 @@
     <string name="card_state_new_label">שם חדש</string>
     <string name="quick_picture">תצוגה</string>
     <string name="quick_network">רשת</string>
+    <string name="wifi_settings">הגדרות Wi-Fi</string>
+    <string name="no_internet">אין גישה לאינטרנט</string>
     <string name="quick_apps">אפליקציות</string>
     <string name="quick_apps_hint">הפעלת אפליקציות שהושבתו</string>
     <string name="dock_edit">עריכת שורת המועדפים</string>

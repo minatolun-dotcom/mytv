@@ -69,6 +69,8 @@
     <string name="tv_settings">TV system settings</string>
     <string name="quick_picture">Display</string>
     <string name="quick_network">Network</string>
+    <string name="wifi_settings">Wi-Fi settings</string>
+    <string name="no_internet">No internet</string>
     <string name="quick_apps">Apps</string>
     <string name="quick_apps_hint">Re-enable</string>
     <string name="on">On</string>

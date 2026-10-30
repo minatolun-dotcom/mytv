@@ -3,12 +3,15 @@
   "icon_only_buttons": true,
   "icon_only_inputs": true,
   "wifi_label_width": 0,
+  "wifi_status_color": true,
+  "wifi_status_warnings": true,
   "dock_apps": [
     "io.gh.reisxd.tizentube.cobalt",
     "st.atlantic.app",
     "net.mrowser",
     "org.localsend.localsend_app"
   ],
+  "dock_opacity": 30,
   "stock_home_redirect": "com.google.android.apps.tv.launcherx",
   "hidden_apps": [
     "com.realtek.tv",
