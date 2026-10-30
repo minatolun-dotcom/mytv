@@ -124,5 +124,7 @@ What settled it, in this order:
 Verified after the run: HOME key opens the new launcher (3/3), uptime climbing across a 60 s watch with
 `sys.boot_completed=1`, zero `RecoveryActivity` starts in a cleared `logcat`, empty crash buffer.
 
-The full runbook for this set is [`MYTV.md`](../../MYTV.md) at the repository root, and the debloat list is
-[`examples/acer-r4g-gtv/`](../../examples/acer-r4g-gtv/).
+The full runbook for this set is [`MYTV.md`](../../MYTV.md) at the repository root, the debloat list is
+[`examples/acer-r4g-gtv/`](../../examples/acer-r4g-gtv/), and **every symptom, cause and fix from that
+session** — including the misleading `get-default-launcher` answer and the recovery steps for a black
+screen — is logged in [`ISSUES.md`](../../ISSUES.md).

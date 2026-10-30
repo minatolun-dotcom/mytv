@@ -45,7 +45,9 @@ TV_HOST=192.168.1.19                 tools/theme.sh     themes/r4g-home         
 ```
 
 The one-shot runbook for this TV — debloat, Home handover, key service, checks — is
-[MYTV.md](../../MYTV.md) at the repository root.
+[MYTV.md](../../MYTV.md) at the repository root, and **every problem we hit with its fix** is in
+[ISSUES.md](../../ISSUES.md) — the bootloop, the default-launcher answer that disagreed with the
+resolver, the guard skips and the recovery steps for a black screen after a power cut.
 
 ## Notes from this set
 

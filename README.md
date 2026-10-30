@@ -36,6 +36,7 @@ everything specific to our TV is collected here:
 | | |
 |---|---|
 | **[MYTV.md](MYTV.md)** | The runbook. Clone, debloat, hand over Home, push the config, run the checks — the whole procedure, already proven on this unit. |
+| **[ISSUES.md](ISSUES.md)** | Every problem we hit, what caused it and the exact fix — including the bootloop, the misleading "default launcher" answer and the guard skips. Read this when something looks wrong. |
 | **[examples/acer-r4g-gtv/](examples/acer-r4g-gtv/)** | Our debloat list (36 packages) and the device notes: what is kept, what is disabled, and why. |
 | **[themes/r4g-home/](themes/r4g-home/)** | Our launcher config overlay: `stock_home_redirect` + `hidden_apps`. |
 | **[docs/devices/acer-r4g.md](docs/devices/acer-r4g.md)** | The cold-boot re-enable trap on this firmware, plus what fixed our unit. |

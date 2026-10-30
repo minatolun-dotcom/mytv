@@ -4,9 +4,12 @@ Everything below has been run against the set and works. Follow it top to bottom
 re-install, or re-customise this TV without rediscovering anything.
 
 Target: **Acer R4G 50"**, `TV_HOST=192.168.1.19`, Google TV 14, `UKR1.260308` (5597).
-Device notes: [`examples/acer-r4g-gtv/README.md`](examples/acer-r4g-gtv/README.md) ·
-[`docs/devices/acer-r4g.md`](docs/devices/acer-r4g.md) — the firmware re-enables ~60 packages at
-every cold boot, and `setupwraith` taking Home is the bootloop this TV had.
+
+| Doc | What is in it |
+|---|---|
+| **[ISSUES.md](ISSUES.md)** | Every problem we hit and its fix — the bootloop, the lying default-launcher answer, the guard skips, the git push failure. **Start here when something looks wrong.** |
+| [examples/acer-r4g-gtv/README.md](examples/acer-r4g-gtv/README.md) | The device, what is installed, what is kept vs disabled. |
+| [docs/devices/acer-r4g.md](docs/devices/acer-r4g.md) | The cold-boot re-enable trap: ~60 packages come back, and `setupwraith` taking Home is the bootloop this TV had. |
 
 ## 0. One-time setup on the computer
 
