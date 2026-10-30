@@ -87,6 +87,37 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
 - `hidden_apps` → Live TV (`com.realtek.tv`), USB media player, meeting mode, System upgrade
   (`com.apps.ota`), plus the packages the firmware re-enables at cold boot (Prime Video, Play Games,
   esticker, gdpr, scast, fastscreen, timeclock, …).
+- `dock_apps` → the dock row in order: **TizenTube, Atlantic, Mrowser, LocalSend**. Anything not
+  listed (Settings, Play Store, …) still appears in the grid below the dock; `missing apps are
+  skipped`, so a package that is later uninstalled cannot break the dock.
+- `home_idle_clock_minutes` → `10`: the clock screensaver after 10 idle minutes on Home (`0` = off).
+
+### 4b. System screensaver: only CleanYourTV's clock
+
+Android's own screensaver (a "dream") is a separate setting from the launcher's idle clock, and on
+this set it was pointing at `io.freemytv/io.freemytv.Screensaver` — **a package that is not
+installed** — while the platform default stayed `com.google.android.apps.tv.dreamx/.service.Backdrop`
+(Google Ambient). So the stock dream could still take over:
+
+```sh
+tools/tv.py 'settings put secure screensaver_components com.gathin.tvhome/.ClockDream
+settings put secure screensaver_enabled 1'
+```
+
+Verify:
+
+```sh
+tools/tv.py 'settings get secure screensaver_components'   # com.gathin.tvhome/.ClockDream
+tools/tv.py 'settings get secure screensaver_enabled'       # 1
+tools/tv.py 'cmd package query-services --brief -a android.service.dreams.DreamService'
+#   expect com.gathin.tvhome/.ClockDream (ours) and com.google.android.apps.tv.dreamx/.service.Backdrop
+#   (installed but no longer selected)
+```
+
+`dreamx` itself stays **enabled** — it is on the firmware's cold-boot re-enable list, so disabling it
+only lasts until a power cycle; not being the selected component is what keeps it from running.
+To put the stock screensaver back: `settings put secure screensaver_components
+com.google.android.apps.tv.dreamx/.service.Backdrop`.
 
 ## 5. Home key service
 
@@ -129,6 +160,8 @@ why `hidden_apps` rather than `pm disable-user` is what keeps those tiles away.
 |---|---|---|
 | `com.realtek.tv` (Live TV) | enabled, hidden | owns `SelectInputActivity` + channel handler; disabling kills HDMI |
 | `com.apps.ota` (System upgrade) | enabled, hidden | would block firmware updates if disabled |
+| Stock screensaver (`dreamx` Backdrop) | installed, **not selected** | selected component is `com.gathin.tvhome/.ClockDream`; `dreamx` is on the cold-boot re-enable list so it cannot be reliably disabled |
+| `screensaver_components` | `com.gathin.tvhome/.ClockDream` | was pointing at `io.freemytv`, a package that was never installed |
 | `com.apps.biz.mt` (meeting mode) | disabled + hidden | has a `BootReceiver` |
 | `launcherx`, `setupwraith` | enabled, always | cold-boot re-enable + RecoveryActivity loop |
 | 6 input-guard skips | disabled with `TVINPUT_ALLOW=1` | firmware prints no permission block |

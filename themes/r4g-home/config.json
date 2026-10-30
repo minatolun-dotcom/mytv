@@ -1,5 +1,11 @@
 {
   "home_idle_clock_minutes": 10,
+  "dock_apps": [
+    "io.gh.reisxd.tizentube.cobalt",
+    "st.atlantic.app",
+    "net.mrowser",
+    "org.localsend.localsend_app"
+  ],
   "stock_home_redirect": "com.google.android.apps.tv.launcherx",
   "hidden_apps": [
     "com.realtek.tv",
