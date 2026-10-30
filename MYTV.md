@@ -56,6 +56,32 @@ tools/tv.py 'pm list packages -d --user 0' | wc -l     # 40 disabled as of 2026-
 
 **Undo:** `tools/restore.sh examples/acer-r4g-gtv/debloat.txt`
 
+### 2b. Our five apps
+
+Only needed on a fresh set (or after a factory reset). [`apps.txt`](apps.txt) at the repository root says
+where each app's APK comes from — a GitHub release, F-Droid, or a URL — and the script resolves the
+newest one from that source, pushes it and installs it:
+
+```sh
+TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py            # every app in apps.txt
+TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py --dry-run  # resolve only, send nothing
+TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py --update   # install over what is there
+```
+
+- Nothing is ever uninstalled. An app already on the TV is skipped; `--update` runs `pm install -r`,
+  and a build signed differently than the installed one is refused with that copy left alone
+  (ISSUES.md 17).
+- The sources are **named in `apps.txt`, not searched for**: a GitHub release is resolved through the
+  API and checked against the sha256 it publishes, Atlantic comes straight from
+  `https://atlantic.st/dl/app/latest.apk`, LocalSend and VLC from F-Droid's suggested version.
+- This set is `armeabi-v7a` only, so `apps.txt` pins TizenTube to `cobalt-arm.apk`; the arm64 build
+  would be refused with `INSTALL_FAILED_NO_MATCHING_ABIS`.
+- TizenTube is ~80 MB: over `b64push.py` (48 KB shell chunks) that takes a while, so set
+  `TV_ADB_BINARY` to a Google adb first (see [tools/native-adb.md](tools/native-adb.md)) and the push
+  becomes one `adb push`.
+- These are the same five packages `dock_apps` names, and the dock skips a missing app, so install
+  order never matters.
+
 ## 3. Home: CleanYourTV owns the Home button, launcherx stays stock Home
 
 **Do not disable `com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith`** —

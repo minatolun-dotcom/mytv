@@ -17,7 +17,8 @@ Or hand this to a coding assistant:
 
 > Clone `https://github.com/minatolun-dotcom/mytv.git` and do what `MYTV.md` says for our TV at
 > `192.168.1.19`: set up the venv, debloat with `examples/acer-r4g-gtv/debloat.txt` (`TVINPUT_ALLOW=1`),
-> push `themes/r4g-home`, enable `HomeKeyService`, then run the checks in step 6. Never disable
+> install our five apps with `tools/install_apps.py` (`apps.txt` says where each comes from), push
+> `themes/r4g-home`, enable `HomeKeyService`, then run the checks in step 6. Never disable
 > `com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith` — that is what
 > made Home bootloop last time. If anything looks wrong, start from `ISSUES.md`.
 
@@ -29,6 +30,7 @@ Or hand this to a coding assistant:
 | [ISSUES.md](ISSUES.md) | Every problem we hit and its fix: the bootloop, the default-launcher answer that lied, the guard skips. |
 | [examples/acer-r4g-gtv/](examples/acer-r4g-gtv/) | The 36-package debloat list plus device notes. |
 | [themes/r4g-home/](themes/r4g-home/) | Launcher config: dock, hidden tiles, redirect, clock screensaver. |
+| [apps.txt](apps.txt) | Where our five apps (TizenTube, Atlantic, Mrowser, LocalSend, VLC) come from, and `tools/install_apps.py` that fetches and installs them on a fresh TV. |
 
 ## What it does to the TV
 

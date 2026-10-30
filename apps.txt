@@ -1,0 +1,19 @@
+# Our five apps, and where each one's APK comes from. Read by tools/install_apps.py.
+#
+#   <package>  <source>  <source id>  [asset pattern]
+#
+# Sources:
+#   github  owner/repo    the newest release from api.github.com; the optional pattern picks the
+#                         asset when a release ships more than one APK (arm vs arm64).
+#   fdroid  package name  f-droid.org's API gives the suggested versionCode, fetched from /repo/.
+#   url     the APK itself, downloaded as-is; a ".../latest.apk" URL stays latest.
+#
+# The package names are the ones themes/r4g-home/config.json docks, so installing anything else
+# leaves that tile skipped. This TV is armeabi-v7a only: TizenTube's arm64 APK would be refused
+# with INSTALL_FAILED_NO_MATCHING_ABIS, which is why its asset is pinned to cobalt-arm.apk.
+
+io.gh.reisxd.tizentube.cobalt  github  reisxd/TizenTubeCobalt   cobalt-arm.apk
+st.atlantic.app                url     https://atlantic.st/dl/app/latest.apk
+net.mrowser                    github  m-salehi-v/mrowser       app-release.apk
+org.localsend.localsend_app    fdroid  org.localsend.localsend_app
+org.videolan.vlc               fdroid  org.videolan.vlc
