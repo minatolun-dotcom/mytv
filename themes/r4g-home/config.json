@@ -1,6 +1,8 @@
 {
   "home_idle_clock_minutes": 10,
   "icon_only_buttons": true,
+  "icon_only_inputs": true,
+  "wifi_label_width": 0,
   "dock_apps": [
     "io.gh.reisxd.tizentube.cobalt",
     "st.atlantic.app",
