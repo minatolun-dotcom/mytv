@@ -1,5 +1,6 @@
 {
   "home_idle_clock_minutes": 10,
+  "icon_only_buttons": true,
   "dock_apps": [
     "io.gh.reisxd.tizentube.cobalt",
     "st.atlantic.app",
