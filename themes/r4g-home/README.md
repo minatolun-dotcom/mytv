@@ -29,7 +29,7 @@ the way every folder in [`themes/`](../) is.
 | `dock_opacity` | `30` | The dock band at 30% opacity, so the wallpaper shows through it. A value picked in Launcher settings still wins until the next `tools/theme.sh` push, which clears the pick (100, 70, 50 or 30 are its options). |
 | `stock_home_redirect` | `com.google.android.apps.tv.launcherx` | Stock Home stays on `launcherx` — this firmware re-enables it every cold boot — and sends its home screen straight back to this launcher. |
 | `home_idle_clock_minutes` | `10` | Clock screensaver after 10 idle minutes on Home (`0` = off). |
-| `hidden_apps` | 16 packages | Live TV, USB media player, meeting mode, System upgrade, and everything the firmware re-enables at a **cold** boot (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a reboot; `pm disable-user` alone does not. |
+| `hidden_apps` | 18 packages | Live TV, USB media player, meeting mode, System upgrade, Netflix and YouTube, and everything the firmware re-enables at a **cold** boot (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a reboot; `pm disable-user` alone does not — Netflix and YouTube were only disabled, so the last power cut brought their tiles back. |
 
 ## Not in this file
 

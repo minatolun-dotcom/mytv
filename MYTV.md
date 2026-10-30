@@ -85,8 +85,9 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
 - `stock_home_redirect` → `com.google.android.apps.tv.launcherx`, so the stock home screen is sent
   straight back to CleanYourTV whenever the firmware puts it up.
 - `hidden_apps` → Live TV (`com.realtek.tv`), USB media player, meeting mode, System upgrade
-  (`com.apps.ota`), plus the packages the firmware re-enables at cold boot (Prime Video, Play Games,
-  esticker, gdpr, scast, fastscreen, timeclock, …).
+  (`com.apps.ota`), **Netflix and YouTube**, plus the packages the firmware re-enables at cold boot
+  (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a
+  reboot — §7 explains why Netflix and YouTube came back after the last power cut.
 - `dock_apps` → the dock row in order: **TizenTube, Atlantic, Mrowser, LocalSend**. Anything not
   listed (Settings, Play Store, …) still appears in the grid below the dock; `missing apps are
   skipped`, so a package that is later uninstalled cannot break the dock.

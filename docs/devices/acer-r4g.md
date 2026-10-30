@@ -69,6 +69,22 @@ is refused (`Shell cannot change component state`).
   com.creative.fastscreen.tv
   ```
 
+- The job's list is 60 packages and only the 20 above were named when this note was written. The cold
+  boot of **2026-10-30** (uptime reset, 17 of our 36 debloat entries back) also re-enabled these five,
+  so they are on it too — **Netflix and YouTube** first among them, which is why they reappeared on Home:
+
+  ```
+  com.netflix.ninja
+  com.google.android.youtube.tv
+  com.amazon.amazonvideo.livingroom
+  com.google.android.partnersetup
+  com.realtek.tv
+  ```
+
+  What hides them afterwards is `hidden_apps`, not the disable: those five were only ever disabled, and
+  a re-enabled package with no hidden tile is simply back on Home. Netflix and YouTube are in
+  `hidden_apps` now, so they stay off it whatever the job does.
+
 - These 11 stayed disabled across cold boots (`launcherx` among them, which is what made Home black
   once setupwraith came back):
 

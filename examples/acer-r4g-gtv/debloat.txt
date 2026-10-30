@@ -30,10 +30,15 @@
 #   - Assistant (katniss), Chromecast (mediashell), Play Store/Services, Gboard, TalkBack, HbbTV
 #   - com.apps.factory.ui, com.realtek.factorytools (never started), com.apps.biz.mt / com.apps.plugins (unclear)
 #
-# Note: entries in docs/devices/acer-r4g.md's 20-package boot list only stay disabled until the next
-# cold boot (com.apps.ota family, esticker, gdpr, scast, fastscreen, meeting.service, audiolink,
-# timeclock, tvmanager, play.games, feedback, ...). They are still worth disabling for this session;
-# hidden_apps in the launcher config keeps any that come back off Home.
+# Note: entries in docs/devices/acer-r4g.md's boot list only stay disabled until the next cold boot
+# (esticker, gdpr, scast, fastscreen, meeting.service, audiolink, timeclock, tvmanager, play.games,
+# feedback, ...). On the cold boot of 2026-10-30 it was 17 of these 36 that came back, five of them
+# not named in that doc: com.netflix.ninja, com.google.android.youtube.tv,
+# com.amazon.amazonvideo.livingroom, com.google.android.partnersetup, com.realtek.tv. They are still
+# worth disabling for this session; hidden_apps in the launcher config is what keeps any that come
+# back off Home - Netflix and YouTube are in it for exactly that reason, since hiding survives the
+# reboot and pm disable-user does not (root cause: FallbackHome -> SetPmodServiceJob ->
+# disableOrEnableApk(1) on every cold boot, which needs the factory P_MODE flag to stop, i.e. root).
 
 # --- Telemetry, ads, consent agents and auto-installs ---
 com.android.adservices.api                 # Google ad services
