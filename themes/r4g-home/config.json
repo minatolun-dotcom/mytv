@@ -1,4 +1,5 @@
 {
+  "home_idle_clock_minutes": 10,
   "stock_home_redirect": "com.google.android.apps.tv.launcherx",
   "hidden_apps": [
     "com.realtek.tv",
