@@ -1,7 +1,10 @@
 {
   "home_idle_clock_minutes": 10,
+  "wallpaper_true_color": true,
+  "ambient_glow": false,
   "icon_only_buttons": true,
   "icon_only_inputs": true,
+  "reorder_button": true,
   "wifi_label_width": 0,
   "wifi_status_color": true,
   "wifi_status_warnings": true,
@@ -12,6 +15,8 @@
     "org.localsend.localsend_app"
   ],
   "dock_opacity": 30,
+  "single_row": true,
+  "dock_band_all": true,
   "stock_home_redirect": "com.google.android.apps.tv.launcherx",
   "hidden_apps": [
     "com.realtek.tv",

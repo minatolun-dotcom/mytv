@@ -12,8 +12,10 @@ TV_HOST=192.168.1.19 tools/theme.sh themes/r4g-home    # push it and restart Hom
 TV_HOST=192.168.1.19 tools/theme.sh --reset            # back to the launcher's built-in config.xml
 ```
 
-`tools/theme.sh` only reads `config.json` — `screenshot.jpg` is here so you can see the result first,
-the way every folder in [`themes/`](../) is.
+`tools/theme.sh` pushes `config.json` **and `wallpaper.jpg`** — the picture the TV shows behind Home.
+The app-coloured glow is off (`ambient_glow: false`): the wallpaper is the whole background, with no
+colour wash following the focused app. `screenshot.jpg` is here so you can see the layout first, the
+way every folder in [`themes/`](../) is.
 
 ## Every key in it
 
@@ -22,10 +24,15 @@ the way every folder in [`themes/`](../) is.
 | `dock_apps` | TizenTube, Atlantic, Mrowser, LocalSend | The four apps that belong on Home; Settings and Play Store stay in the grid below. |
 | `icon_only_buttons` | `true` | Wi-Fi and Settings as round icon buttons; Inputs keeps its label. |
 | `icon_only_inputs` | `true` | Inputs round too — it has its own key, `icon_only_buttons` does not cover it. |
+| `ambient_glow` | `false` | No app-coloured radial glow behind the dock: with a wallpaper of its own, the focused app's colour wash was noise on top of it. false hides the glow view entirely; the dock band and the tile highlight are unaffected. |
+| `wallpaper_true_color` | `true` | Decode the wallpaper in 32-bit colour instead of RGB_565. Ours is a dark deep-space gradient — exactly the kind of image the built-in config warns "bands" in 565 — and this TV has the 2 GB the key is meant for. |
+| `reorder_button` | `true` | A reorder button (two arrows) in the top bar, between Wi-Fi and Settings: press it to pick tiles up and move them with the D-pad (Back saves and leaves). Reordering is also in the Settings button's long-press menu; this just gives it a visible way in. |
 | `wifi_label_width` | `0` | Icon only, no network name. **Pinned deliberately:** `Config` reads this from the installed APK's resources *before* overlaying `config.json`, and that build's default is non-zero, so the Wi-Fi pill kept its label until the value was written here. |
 | `wifi_status_color` | `true` | The Wi-Fi icon tints with the connection instead of always white: green while online, white while it is not (needs a rebuild, see below). |
 | `wifi_status_warnings` | `true` | Refines the tint: orange while a connection exists but is not usable yet — no internet, still connecting, or Wi-Fi on with nothing associated — and red only while the Wi-Fi radio is off, so a reconnect does not flash red. |
 | `settings_key_panel` | `true` | Settings opens the small glass panel (TV settings, Display, Network, Apps, Launcher settings) instead of the full TV Settings. The remote's Settings key already reads this; the on-screen gear needs the rebuilt APK below. |
+| `single_row` | `true` | Every app in one horizontal dock row: four tiles on screen at once (`columns` = 4), Right/Left scroll the row sideways to the rest. No grid below; Up goes to the top bar. |
+| `dock_band_all` | `true` | With `single_row`, the dock band runs behind **every** app in the row instead of only the four in `dock_apps`. |
 | `dock_opacity` | `30` | The dock band at 30% opacity, so the wallpaper shows through it. A value picked in Launcher settings still wins until the next `tools/theme.sh` push, which clears the pick (100, 70, 50 or 30 are its options). |
 | `stock_home_redirect` | `com.google.android.apps.tv.launcherx` | Stock Home stays on `launcherx` — this firmware re-enables it every cold boot — and sends its home screen straight back to this launcher. |
 | `home_idle_clock_minutes` | `10` | Clock screensaver after 10 idle minutes on Home (`0` = off). |
