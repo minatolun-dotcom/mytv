@@ -34,6 +34,11 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final boolean singleRow;
     /** dock_band_all: in a single row, the band runs behind every app instead of the dock apps only. */
     private final boolean bandAll;
+    /** The band's last drawn rectangle (grid content coordinates) and radius, for dock_blur's layer. */
+    private final Rect lastBand = new Rect();
+    private float lastRadius;
+    /** Called when that rectangle moves (layout, scroll, a rebind), so the blur layer can follow. */
+    private Runnable bandListener;
 
     /**
      * @param translucent the cinematic shelf's band: the artwork and the glow show through it.
@@ -66,6 +71,19 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         return tileRadiusPx + paddingPx;
     }
 
+    /** dock_blur follows the band through this: the listener runs only when the drawn rectangle changes. */
+    void setBandListener(Runnable listener) {
+        this.bandListener = listener;
+    }
+
+    Rect bandRect() {
+        return lastBand;
+    }
+
+    float bandRadius() {
+        return lastRadius;
+    }
+
     /**
      * The band's padding on every side for dock_even_padding: the gap between two dock tiles (a cell minus its tile, as
      * AppAdapter.tileWidthPx lays them out), capped by the room the grid leaves at its edges.
@@ -87,7 +105,13 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
 
     @Override
     public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        if (!bandVisible) return;
+        if (!bandVisible) {
+            if (!lastBand.isEmpty()) {
+                lastBand.setEmpty();
+                if (bandListener != null) bandListener.run();
+            }
+            return;
+        }
         boolean any = false;
         int cardWidth = 0;
         for (int i = 0; i < parent.getChildCount(); i++) {
@@ -140,11 +164,19 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         }
         rect.bottom += namesRoom;
         if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom)) {
-            // The pills' glass (pill_bg: white, 18% fading to 8%), a little fainter over this much larger area.
+            // The pills' glass (BackdropGlassDrawable: white, 18% fading to 8%), a little fainter over this much larger area.
             band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, 0x24FFFFFF, 0x0DFFFFFF,
                     Shader.TileMode.CLAMP));
             shaderTop = rect.top;
             shaderBottom = rect.bottom;
+        }
+        int bl = Math.round(rect.left), bt = Math.round(rect.top), br = Math.round(rect.right), bb = Math.round(rect.bottom);
+        if (bl != lastBand.left || bt != lastBand.top || br != lastBand.right || bb != lastBand.bottom
+                || radius != lastRadius) {
+            lastBand.set(bl, bt, br, bb);
+            lastRadius = radius;
+            // The listener's owner posts this: a layout cannot run from inside a draw pass.
+            if (bandListener != null) bandListener.run();
         }
         c.drawRoundRect(rect, radius, radius, band);
         c.drawRoundRect(rect, radius, radius, edge);

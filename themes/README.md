@@ -153,6 +153,7 @@ A new key needs one there in the same pull request.
 | `dock_even_padding` | bool | The dock band's padding equals the gap between its tiles on all four sides, as far as the grid's edges leave room (`false` by default) |
 | `dock_glass` | bool | The dock band as light frosted glass like the top bar's pills (`false` by default); suits `sky_intensity` or a wallpaper, where the solid band reads as a dark slab |
 | `dock_band` | bool | Draw the dock band and its edge (`true` by default); `false` leaves the tiles floating on the wallpaper with no band, border or dark slab |
+| `dock_blur` | 0 to 40 | Real backdrop blur behind the dock band: a blurred copy of the wallpaper clipped to the band's rounded rectangle, in dp of radius (0, the default, keeps no layer; about 24 reads as frosted glass, Android 12+). Above 0 the same blur and glass also frost the top-right pills' circles, every glass popup's background and the settings panel (`settings_key_panel`), each against its own place on screen |
 | `single_row` | bool | Every app in the dock's row, the dock apps first, scrolling sideways; no grid below (`false` by default; needs `dock_row`) |
 | `dock_band_all` | bool | With `single_row`, the band runs behind every app in the row, not only the dock apps (`false` by default) |
 | `ambient_glow` | bool | The glow behind the dock in the focused app's colour (`true` by default); `false` keeps only `background_color` or the wallpaper, e.g. for a calm photo background |

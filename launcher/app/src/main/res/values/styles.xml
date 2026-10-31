@@ -14,7 +14,7 @@
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">20dp</item>
         <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/pill_bg</item>
+        <item name="android:background">@drawable/pill_glass</item>
         <item name="android:textColor">@drawable/pill_text</item>
         <item name="android:textSize">15sp</item>
         <item name="android:fontFamily">@string/font_medium</item>
@@ -26,7 +26,7 @@
     </style>
     <style name="TopButton" parent="TopButtonBase" />
 
-    <!-- Icon-only pill: a 42dp circle (pill_bg's 21dp corners) with the 22dp icon centred by even padding. Give it a
+    <!-- Icon-only pill: a 42dp circle (pill_glass's 21dp corners) with the 22dp icon centred by even padding. Give it a
          contentDescription, since there is no text. -->
     <style name="TopButtonIcon" parent="TopButtonBase">
         <item name="android:layout_width">42dp</item>

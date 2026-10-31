@@ -28,6 +28,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 /** Displays and rotates a theme's local wallpaper images while Home is visible. */
 final class WallpaperPlayer {
@@ -52,6 +53,8 @@ final class WallpaperPlayer {
     private boolean closed;
     private boolean loading;
     private String displayed = "";
+    /** dock_blur: told every picture that goes on screen, and null when the texture is dropped under memory pressure. */
+    private Consumer<Bitmap> wallpaperListener;
     /** wallpaper_captions: the shown picture's name from wallpapers/captions.txt; null when off or there are none. */
     private final TextView caption;
     private final Map<String, String> names;
@@ -144,6 +147,7 @@ final class WallpaperPlayer {
         // The renderer may still have a queued frame that references this hardware bitmap. Drop our references and
         // let Android reclaim its native buffer after rendering releases it instead of recycling it mid-frame.
         current = null;
+        if (wallpaperListener != null) wallpaperListener.accept(null);
         displayed = "";
         root.setBackgroundColor(backgroundColor);
     }
@@ -252,6 +256,15 @@ final class WallpaperPlayer {
         }).start();
     }
 
+    /** dock_blur's layer follows every picture; attach it after the first one may already be on screen. */
+    void setOnWallpaperChanged(Consumer<Bitmap> listener) {
+        wallpaperListener = listener;
+    }
+
+    Bitmap currentBitmap() {
+        return current;
+    }
+
     /** Names plus sizes: enough to notice a different collection without hashing every image. */
     private static String collectionKey(List<File> images) {
         StringBuilder key = new StringBuilder();
@@ -266,6 +279,7 @@ final class WallpaperPlayer {
         // The wallpaper covers the whole root; avoid drawing the fallback colour under it.
         root.setBackground(null);
         image.setImageBitmap(bitmap);
+        if (wallpaperListener != null) wallpaperListener.accept(bitmap);
         if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
     }
 

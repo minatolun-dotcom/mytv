@@ -287,6 +287,15 @@
          through it. false (the default) keeps the solid near-black band, or the cinematic shelf's dark glass. Can
          also be set with "dock_glass": true in a theme's config.json. -->
     <bool name="dock_glass">false</bool>
+    <!-- Real backdrop blur behind the dock band: a blurred copy of the wallpaper, clipped to the band's rounded
+         rectangle, in dp of blur radius (0-40; about 24 reads as frosted glass). 0, the default, keeps no blur
+         layer at all - the launcher targets 1 GB TVs, so the cost is opt-in. Needs Android 12 (RenderEffect);
+         older systems keep the plain band. A theme can set "dock_blur": 24. With dock_band false there is no
+         band to sit behind, so the dock's own layer does nothing - but above 0 the same blur and glass also
+         frost the top-right pills' circles, the glass popups' backgrounds and the settings panel the remote's
+         Settings button opens (a shared blurred copy of the screen, drawn inside those shapes on every API level;
+         the panel reads the copy Home already made, so it never blurs the wallpaper a second time). -->
+    <integer name="dock_blur">0</integer>
     <!-- Draw the dock band and its edge. false leaves the tiles floating on the wallpaper (config.xml dock_band). -->
     <bool name="dock_band">true</bool>
     <!-- Every app in one row: the dock apps first, the rest after them, and the row scrolls sideways when focus

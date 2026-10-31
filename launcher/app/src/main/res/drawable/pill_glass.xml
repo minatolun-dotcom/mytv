@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The frosted pill: the blurred wallpaper behind it, the pills' white glass (18% fading to 8%) and the
+     same 1dp rim, with the solid white focused state inside the class (config.xml dock_blur). -->
+<com.gathin.tvhome.BackdropGlassDrawable xmlns:android="http://schemas.android.com/apk/res/android" />

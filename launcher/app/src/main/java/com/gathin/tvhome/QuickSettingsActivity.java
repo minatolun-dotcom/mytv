@@ -39,6 +39,22 @@ public final class QuickSettingsActivity extends Activity {
             panel.setLayoutParams(position);
         }
         findViewById(R.id.scrim).setOnClickListener(v -> finish());
+        // dock_blur: the same frosted-glass panel background the Inputs/Network dropdowns have - the shared
+        // blurred wallpaper at this panel's own place on screen, under the rows by construction. Without a
+        // blurred picture yet (dock_blur off, or Home never drew) the layout's dark glass stays.
+        View panelView = findViewById(R.id.panel);
+        android.graphics.Bitmap backdrop = BackdropGlassDrawable.sharedBackdrop();
+        if (backdrop != null) {
+            BackdropGlassDrawable glass = new BackdropGlassDrawable(
+                    getResources().getDisplayMetrics().density, 20f, 0x24FFFFFF, 0x0DFFFFFF);
+            glass.setBackdrop(backdrop);
+            panelView.setBackground(glass);
+            panelView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> {
+                int[] p = new int[2];
+                v.getLocationOnScreen(p);
+                glass.setScreenOffset(p[0], p[1]);
+            });
+        }
         LinearLayout rows = findViewById(R.id.rows);
         addRow(rows, R.drawable.ic_settings, R.string.tv_settings, 0, SystemSettings.intent(this, Settings.ACTION_SETTINGS));
         addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, SystemSettings.intent(this, Settings.ACTION_DISPLAY_SETTINGS));

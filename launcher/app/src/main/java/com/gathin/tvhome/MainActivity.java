@@ -24,6 +24,7 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
+import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -144,6 +145,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private RecyclerView grid;
     private FrameLayout root;
     private WallpaperPlayer wallpaperPlayer;
+    /** The dock band's decoration (null without dock_row) and its dock_blur layer (Android 12 and later). */
+    private DockDecoration dockDecoration;
+    private DockBlurView dockBlurView;
+    /** dock_blur: the top-right pills row, whose own backgrounds are frosted over the blurred wallpaper. */
+    private ViewGroup topButtonsRow;
+    /** dock_blur's frosted backgrounds (the pills', a glass popup's panel): they share the blurred wallpaper. */
+    private final List<BackdropGlassDrawable> glassBackdrops = new ArrayList<>();
+    /** The shared blurred copy of the screen those backgrounds draw; one per wallpaper. */
+    private Bitmap blurredBackdrop;
+    /** dock_blur's radius in dp, copied from the config at load (the frosted surfaces outlive onCreate's local cfg). */
+    private int dockBlurDp;
     private GlassView glass;
     private View ambient;
     private TextView heroName;
@@ -434,6 +446,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
+        dockBlurDp = cfg.dockBlur;
         homeAppKeys = RemoteKeys.parseAppKeys(cfg.appKeys);
         appLibrarySelection = cfg.appLibrarySelection;
         libraryOkOpens = cfg.libraryOkOpens;
@@ -640,9 +653,32 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             public void onChildViewDetachedFromWindow(@NonNull View v) {
             }
         });
-        if (dockRow) grid.addItemDecoration(new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass, cfg.dockEvenPadding, cfg.dockBand,
-                singleRow, cfg.dockBandAll));
+        if (dockRow) {
+            dockDecoration = new DockDecoration(COLUMNS, density, cinematic, cfg.alwaysShowNames, cfg.dockOpacity, cfg.dockGlass, cfg.dockEvenPadding, cfg.dockBand,
+                    singleRow, cfg.dockBandAll);
+            grid.addItemDecoration(dockDecoration);
+        }
+        // dock_blur (Android 12+): a blurred copy of the wallpaper clipped to the band's rounded rectangle,
+        // between the wallpaper and everything else, so the glass band shows the picture smeared behind it.
+        // The layer is static: it redraws only when the wallpaper or the band's place changes.
+        if (cfg.dockBlur > 0 && dockDecoration != null && Build.VERSION.SDK_INT >= 31) {
+            dockBlurView = new DockBlurView(this);
+            root.addView(dockBlurView, 1, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            dockBlurView.setRenderEffect(RenderEffect.createBlurEffect(
+                    cfg.dockBlur * density, cfg.dockBlur * density, Shader.TileMode.CLAMP));
+            dockDecoration.setBandListener(() -> grid.post(this::positionDockBlur));
+            wallpaperPlayer.setOnWallpaperChanged(this::onWallpaperChanged);
+            dockBlurView.setWallpaper(wallpaperPlayer.currentBitmap());
+            blurredBackdrop = BackdropGlassDrawable.blurOf(wallpaperPlayer.currentBitmap(), cfg.dockBlur * density);
+            BackdropGlassDrawable.share(blurredBackdrop);
+            grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) { positionDockBlur(); }
+            });
+        }
         if (cfg.fadeRows) TopFade.attach(grid, 48 * density);
+        // dock_blur's frosted top-right pills are backgrounds, so they need no band rectangle nor Android 12.
+        if (cfg.dockBlur > 0) attachTopGlass();
         // Reduced motion: the tiles are simply there, with no entrance (reloadApps skips it there too).
         if (animations && !reducedMotion) {
             grid.setLayoutAnimation(new LayoutAnimationController(
@@ -701,6 +737,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // Cold start or column count > 4: the first focus can run before the grid has its final width or
             // padding, leaving the glass at the XML design size until a key is pressed.
             grid.post(this::refitGlass);
+            positionDockBlur();
         });
 
         // Keep the glass glued to its tile while the grid scrolls.
@@ -1627,6 +1664,58 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (to < COLUMNS) dockInSession.add(movingKey);
         else dockInSession.remove(movingKey);
         refocusAfterLayout(to);
+    }
+
+    /** dock_blur: puts the blur layer's clip on the band's rectangle wherever a scroll or layout pass left it. */
+    private void positionDockBlur() {
+        if (dockBlurView == null || dockDecoration == null) return;
+        Rect band = dockDecoration.bandRect();
+        if (band == null || band.isEmpty()) {
+            dockBlurView.setBand(0, 0, 0, 0, 0);
+            return;
+        }
+        int[] loc = new int[2];
+        grid.getLocationOnScreen(loc);
+        float left = loc[0] + band.left - grid.getScrollX();
+        float top = loc[1] + band.top - grid.getScrollY();
+        dockBlurView.setBand(left, top, left + band.width(), top + band.height(), dockDecoration.bandRadius());
+    }
+
+    /** dock_blur: the band's layer and the frosted pill/panel backgrounds follow the wallpaper together. */
+    private void onWallpaperChanged(Bitmap bitmap) {
+        if (dockBlurView != null) dockBlurView.setWallpaper(bitmap);
+        blurredBackdrop = BackdropGlassDrawable.blurOf(bitmap, dockBlurDp * density);
+        BackdropGlassDrawable.share(blurredBackdrop);
+        for (BackdropGlassDrawable glass : glassBackdrops) glass.setBackdrop(blurredBackdrop);
+    }
+
+    /** dock_blur: the top-right pills' own backgrounds frosted over the blurred wallpaper - no plate behind the
+     *  cluster, the icons stay separate circles. Tracks the bar: a label or a hidden pill moves it after the
+     *  first layout. */
+    private void attachTopGlass() {
+        View vb = findViewById(R.id.topButtons);
+        if (!(vb instanceof ViewGroup)) return;
+        topButtonsRow = (ViewGroup) vb;
+        topButtonsRow.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> positionTopGlass());
+        positionTopGlass();
+    }
+
+    /** dock_blur: joins each visible pill's frosted background to the shared blur and to its place on screen. */
+    private void positionTopGlass() {
+        if (topButtonsRow == null) return;
+        int[] p = new int[2];
+        for (int i = 0; i < topButtonsRow.getChildCount(); i++) {
+            View c = topButtonsRow.getChildAt(i);
+            Drawable d = c.getBackground();
+            if (!(d instanceof BackdropGlassDrawable) || c.getVisibility() != View.VISIBLE) continue;
+            BackdropGlassDrawable glass = (BackdropGlassDrawable) d;
+            if (!glassBackdrops.contains(glass)) {
+                glassBackdrops.add(glass);
+                glass.setBackdrop(blurredBackdrop);
+            }
+            c.getLocationOnScreen(p);
+            glass.setScreenOffset(p[0], p[1]);
+        }
     }
 
     /**
@@ -3458,7 +3547,28 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (openPopup == popup) openPopup = null;
         });
         openPopup = popup;
+        attachGlassBackdrop(popup, panel);
         return popup;
+    }
+
+    /** dock_blur: the glass popups' panel background becomes the blurred wallpaper at the panel's own place on
+     *  screen, with the dock's glass (the band's gradient and rim) on top. As a background it stays under the
+     *  rows by construction - the frost can never cover the content. */
+    private void attachGlassBackdrop(PopupWindow popup, View panel) {
+        if (dockBlurDp <= 0) return;
+        BackdropGlassDrawable glass = new BackdropGlassDrawable(density, 20f, 0x24FFFFFF, 0x0DFFFFFF);
+        panel.setBackground(glass);   // replaces glass_panel's dark slab
+        glass.setBackdrop(blurredBackdrop);
+        glassBackdrops.add(glass);
+        panel.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> {
+            int[] p = new int[2];
+            v.getLocationOnScreen(p);
+            glass.setScreenOffset(p[0], p[1]);
+        });
+        popup.setOnDismissListener(() -> {
+            if (openPopup == popup) openPopup = null;
+            glassBackdrops.remove(glass);
+        });
     }
 
     /** Drop in: fade and unfold from the top edge, hanging under the anchor pill. */
