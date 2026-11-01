@@ -25,3 +25,6 @@ launcher/replay_pid*.log
 # This fork: git credentials for the mytv remote stay local
 secrets
 .git-credentials
+
+# Personal GitHub recovery codes: never commit
+/github-recovery-codes.txt
