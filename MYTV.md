@@ -51,7 +51,7 @@ TVINPUT_ALLOW=1 tools/disable.sh examples/acer-r4g-gtv/debloat.txt
 - Verify afterwards:
 
 ```sh
-tools/tv.py 'pm list packages -d --user 0' | wc -l     # 40 disabled as of 2026-10-30
+tools/tv.py 'pm list packages -d --user 0' | wc -l     # 6 disabled as of 2026-11-01 (40 before the uninstall pass, §2c)
 ```
 
 **Undo:** `tools/restore.sh examples/acer-r4g-gtv/debloat.txt`
@@ -82,6 +82,49 @@ TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py --update   #
 - These are the same five packages `dock_apps` names, and the dock skips a missing app, so install
   order never matters.
 
+### 2c. The uninstall pass (2026-11-01)
+
+Hiding and disabling only ever covered packages that stay installed — the remote's Netflix/YouTube/
+Prime/Hotstar buttons still opened them from any screen, and the firmware's cold-boot job kept
+re-enabling what was merely disabled (§7, [ISSUES.md](ISSUES.md) 24). So every bloat package that was
+only disabled or hidden was removed for user 0 instead, one call per package:
+
+```sh
+tools/tv.py 'pm uninstall --user 0 <package>'
+```
+
+What went (33 packages):
+
+- **The four app buttons:** `com.netflix.ninja`, `com.google.android.youtube.tv`,
+  `com.amazon.amazonvideo.livingroom`, `in.startv.hotstar`.
+- **The hidden_apps utilities:** USB media player, meeting mode (`com.apps.biz.mt`), Play Games,
+  Google feedback, esticker and esticker3, audiolink, scast, TV manager, `com.mk.tv.meeting.service`,
+  time clock, fastscreen.
+- **The rest of the disabled list:** MX Player, SonyLIV, `com.graymatrix.did`, Seraphic WebView,
+  virtualkey, smartkey, `com.apps.mk.wd`, Wi-Fi hotspot, factory UI (`com.apps.factory.ui`),
+  `com.realtek.media.notification`, AdServices, federated compute, on-device personalisation,
+  Health Connect (controller + backuprestore), basic dreams, HTML viewer.
+
+Kept — installed and hidden where relevant, or left disabled:
+
+- `com.realtek.tv` — HDMI, source menu and channel handler; removing it kills the inputs.
+- `com.apps.ota` — firmware updates.
+- `com.apps.bluetoothremote` — remote and Bluetooth pairing, the recovery path if the remote ever
+  needs re-pairing.
+- The consent and setup plumbing: `com.apps.function.gdpr`, `com.android.tv.feedbackconsent`,
+  `com.android.backupconfirm`, `com.android.sharedstoragebackup`, `com.android.wallpaperbackup`,
+  `android.autoinstalls.config.scbc.device`.
+- `com.netflix.tokenmanager` and `com.google.android.youtube.tvmusic` both answered
+  `Failure [not installed for 0]` — stubs with no launchable entry, nothing to remove.
+
+The cold-boot job can only *enable* a package that still exists, so none of the 33 can come back
+short of a Play Store install or a factory reset. Verify:
+
+```sh
+tools/tv.py 'pm list packages | grep -iE "netflix|youtube|amazonvideo|hotstar|sonyliv|mxtech"'
+#   expect no match beyond a stub line; pressing the four remote buttons opens nothing
+```
+
 ## 3. Home: CleanYourTV owns the Home button, launcherx stays stock Home
 
 **Do not disable `com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith`** —
@@ -110,10 +153,12 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
 
 - `stock_home_redirect` → `com.google.android.apps.tv.launcherx`, so the stock home screen is sent
   straight back to CleanYourTV whenever the firmware puts it up.
-- `hidden_apps` → Live TV (`com.realtek.tv`), USB media player, meeting mode, System upgrade
-  (`com.apps.ota`), **Netflix and YouTube**, plus the packages the firmware re-enables at cold boot
-  (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a
-  reboot — §7 explains why Netflix and YouTube came back after the last power cut.
+- `hidden_apps` → what stays installed but hidden: Live TV (`com.realtek.tv`), System upgrade
+  (`com.apps.ota`) and the GDPR notice — everything else it named (Netflix, YouTube, Prime Video,
+  Hotstar, Play Games, esticker, scast, fastscreen, timeclock, …) was **uninstalled for user 0 on
+  2026-11-01** (§2c), and its entries remain in the config as a second layer should any of them ever
+  be installed again. §7 explains why hiding alone was not enough: the cold boot keeps re-enabling
+  whatever still exists on the set.
 - `dock_apps` → the dock row in order: **TizenTube, Atlantic, Mrowser, LocalSend**. Anything not
   listed (Settings, Play Store, …) still appears in the grid below the dock; `missing apps are
   skipped`, so a package that is later uninstalled cannot break the dock.

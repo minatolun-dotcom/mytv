@@ -26,8 +26,8 @@ read that first: the firmware re-enables ~60 packages at every **cold** boot.
 | CleanYourTV launcher | `com.gathin.tvhome` | yes (Home) |
 | Settings, Play Store, Play Services, Gboard, Assistant, Chromecast, HbbTV | | yes |
 | Realtek Live TV / HDMI / tuner stack, key handlers, OTA | | yes |
-| YouTube, Netflix, Prime Video, Hotstar, SonyLIV, MX Player | | disabled |
-| Telemetry, ad/consent agents, OEM demo & signage apps | | disabled |
+| YouTube, Netflix, Prime Video, Hotstar, SonyLIV, MX Player | | uninstalled 2026-11-01 |
+| Telemetry, ad/consent agents, OEM demo & signage apps | | uninstalled; consent, backup and pairing kept disabled |
 
 ## Files
 
@@ -62,5 +62,9 @@ resolver, the guard skips and the recovery steps for a black screen after a powe
 - `com.apps.ota` (the "System upgrade" tile) stays **enabled** and is hidden too — the user never
   updates, but disabling it would block firmware updates.
 - Two runs used `TVINPUT_ALLOW=1`, justified by the `pm query-services` check above.
+- **2026-11-01, beyond disable/undo:** every bloat package that was only disabled or hidden was
+  uninstalled for user 0 (33 packages) — the remote's app buttons open nothing now and no cold boot
+  can re-enable them. Kept: `com.realtek.tv`, `com.apps.ota`, `com.apps.bluetoothremote`, the consent
+  and backup components. Record: [MYTV.md](../../MYTV.md) §2c, [ISSUES.md](../../ISSUES.md) 24.
 - Verified after the run: HOME key opens CleanYourTV (3/3), uptime climbed without a reboot,
   `sys.boot_completed=1`, zero `RecoveryActivity` starts in a cleared logcat, no crash-buffer entries.

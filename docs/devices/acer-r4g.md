@@ -85,6 +85,10 @@ is refused (`Shell cannot change component state`).
   a re-enabled package with no hidden tile is simply back on Home. Netflix and YouTube are in
   `hidden_apps` now, so they stay off it whatever the job does.
 
+  **2026-11-01, on our set:** those four streaming apps — and most of the packages this doc lists as
+  disabled — were uninstalled for user 0 instead, so the job has nothing left to re-enable for them;
+  `hidden_apps` keeps their entries as a second layer. See [MYTV.md](../../MYTV.md) §2c.
+
 - These 11 stayed disabled across cold boots (`launcherx` among them, which is what made Home black
   once setupwraith came back):
 
