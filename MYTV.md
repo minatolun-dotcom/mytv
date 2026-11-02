@@ -125,6 +125,33 @@ tools/tv.py 'pm list packages | grep -iE "netflix|youtube|amazonvideo|hotstar|so
 #   expect no match beyond a stub line; pressing the four remote buttons opens nothing
 ```
 
+### 2d. The Play Store removed (2026-11-02)
+
+Nothing left on the set was Play-managed — LocalSend and VLC had been swapped for F-Droid's builds —
+so the Store itself went too, and the first attempt showed why disabling and removing are not the
+same thing on this firmware:
+
+```sh
+tools/tv.py 'pm disable-user --user 0 com.android.vending'   # Success, but back after the next cold boot
+tools/tv.py 'pm uninstall --user 0 com.android.vending'      # what actually stuck
+```
+
+- The **disable was reversed at the next cold boot**: the firmware's re-enable job (§7,
+  [ISSUES.md](ISSUES.md) 14, 21) turns its list back on with `pm enable`, and `vending` came back
+  with it.
+- The **uninstall survived a second cold boot** — `pm path com.android.vending` stayed empty — for
+  the same reason the 33 in §2c stay gone: the job can only `pm enable` a package that still exists.
+- **Play Services (`com.google.android.gms`) stays enabled** — voice assistant, Chromecast and
+  sign-in depend on it; only the Store was removed.
+- The launcher builds its grids with `queryIntentActivities(..., 0)`, which skips packages that are
+  not installed, so the Play tile left the grid with no dead button and no crash.
+
+Verify after any power cut:
+
+```sh
+tools/tv.py 'pm path com.android.vending'    # expect empty output
+```
+
 ## 3. Home: CleanYourTV owns the Home button, launcherx stays stock Home
 
 **Do not disable `com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith`** —
@@ -160,7 +187,7 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
   be installed again. §7 explains why hiding alone was not enough: the cold boot keeps re-enabling
   whatever still exists on the set.
 - `dock_apps` → the dock row in order: **TizenTube, Atlantic, Mrowser, LocalSend**. Anything not
-  listed (Settings, Play Store, …) still appears in the grid below the dock; `missing apps are
+  listed (Settings, …) still appears in the grid below the dock; `missing apps are
   skipped`, so a package that is later uninstalled cannot break the dock.
 - `home_idle_clock_minutes` → `10`: the clock screensaver after 10 idle minutes on Home (`0` = off).
 - `dock_opacity` → `30`: the dock band at 30% opacity, so the wallpaper shows through it. Picking 100/70/50/30

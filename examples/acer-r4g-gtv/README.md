@@ -24,8 +24,9 @@ read that first: the firmware re-enables ~60 packages at every **cold** boot.
 | Atlantic | `st.atlantic.app` | yes |
 | Mrowser | `net.mrowser` | yes |
 | CleanYourTV launcher | `com.gathin.tvhome` | yes (Home) |
-| Settings, Play Store, Play Services, Gboard, Assistant, Chromecast, HbbTV | | yes |
+| Settings, Play Services, Gboard, Assistant, Chromecast, HbbTV | | yes |
 | Realtek Live TV / HDMI / tuner stack, key handlers, OTA | | yes |
+| Play Store | `com.android.vending` | uninstalled 2026-11-02 |
 | YouTube, Netflix, Prime Video, Hotstar, SonyLIV, MX Player | | uninstalled 2026-11-01 |
 | Telemetry, ad/consent agents, OEM demo & signage apps | | uninstalled; consent, backup and pairing kept disabled |
 
@@ -66,5 +67,9 @@ resolver, the guard skips and the recovery steps for a black screen after a powe
   uninstalled for user 0 (33 packages) — the remote's app buttons open nothing now and no cold boot
   can re-enable them. Kept: `com.realtek.tv`, `com.apps.ota`, `com.apps.bluetoothremote`, the consent
   and backup components. Record: [MYTV.md](../../MYTV.md) §2c, [ISSUES.md](../../ISSUES.md) 24.
+- **2026-11-02, the Play Store:** `pm disable-user` was reversed by the next cold boot, so
+  `com.android.vending` was uninstalled for user 0 instead — that survived a second reboot. Play
+  Services stays enabled; nothing on the set is Play-managed now (LocalSend and VLC are F-Droid
+  builds). Record: [MYTV.md](../../MYTV.md) §2d, [ISSUES.md](../../ISSUES.md) 25.
 - Verified after the run: HOME key opens CleanYourTV (3/3), uptime climbed without a reboot,
   `sys.boot_completed=1`, zero `RecoveryActivity` starts in a cleared logcat, no crash-buffer entries.
