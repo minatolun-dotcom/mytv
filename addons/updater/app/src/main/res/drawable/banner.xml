@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The TV banner: a download arrow over a chip, on this add-on's green. Drawn for this
+     add-on, no third-party art. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <path
+        android:fillColor="#FF2E7D32"
+        android:pathData="M0,0h320v180h-320z" />
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M64,46h64v88h-64z" />
+    <path
+        android:fillColor="#FF2E7D32"
+        android:pathData="M76,58h40v64h-40z" />
+    <path
+        android:fillColor="#FF81C784"
+        android:pathData="M84,70h8v8h-8zM100,70h8v8h-8zM84,90h8v8h-8zM100,90h8v8h-8z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M176,50h20v52h16l-26,32l-26,-32h16z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M170,138h52v12h-52z" />
+</vector>

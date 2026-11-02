@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app icon: the banner's chip and arrow, square. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF2E7D32"
+        android:pathData="M0,0h48v48h-48z" />
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M8,6h20v36h-20z" />
+    <path
+        android:fillColor="#FF2E7D32"
+        android:pathData="M12,12h12v24h-12z" />
+    <path
+        android:fillColor="#FF81C784"
+        android:pathData="M14,16h3v3h-3zM21,16h3v3h-3zM14,25h3v3h-3zM21,25h3v3h-3z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M32,8h6v16h5l-8,10l-8,-10h5z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M30,38h12v4h-12z" />
+</vector>

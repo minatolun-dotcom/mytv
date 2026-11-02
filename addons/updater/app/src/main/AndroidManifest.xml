@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <!-- The two permissions this app exists for: reading its apps' own release feeds (INTERNET)
+         and asking the TV to confirm an update (REQUEST_INSTALL_PACKAGES). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- Android 11+ hides other packages unless they are named here: these five are the apps
+         this updater checks, read for their version, signer and label. -->
+    <queries>
+        <package android:name="io.gh.reisxd.tizentube.cobalt" />
+        <package android:name="st.atlantic.app" />
+        <package android:name="net.mrowser" />
+        <package android:name="org.localsend.localsend_app" />
+        <package android:name="org.videolan.vlc" />
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:banner="@drawable/banner"
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:supportsRtl="false"
+        android:theme="@android:style/Theme.Material.NoActionBar.Fullscreen">
+
+        <activity
+            android:name=".UpdaterActivity"
+            android:exported="true"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <!-- Clean Your TV module card (docs/specs/card.md): the tile shows once the owner says Show. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="com.gathin.tvhome.category.DOCK_CARD" />
+            </intent-filter>
+            <meta-data android:name="com.gathin.tvhome.card" android:resource="@xml/module_card" />
+        </activity>
+
+        <!-- Where a PackageInstaller session lands: the TV's own confirm dialog, then the result. -->
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false" />
+    </application>
+</manifest>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One list, one line per tracked app: the check's verdict is the whole screen. -->
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:divider="#1AFFFFFF"
+    android:dividerHeight="1dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp" />
