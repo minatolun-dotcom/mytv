@@ -3,20 +3,20 @@
 Our TV's copy of [CleanYourTV](https://github.com/Gathin23/cleanyourtv) — debloated, with our launcher,
 our dock and our screensaver. Everything here has already been run against the set and works.
 
-**TV:** Acer R4G 50" · Google TV 14 · `UKR1.260308` · `TV_HOST=192.168.1.19`
+**TV:** Acer R4G 50" · Google TV 14 · `UKR1.260308` · `TV_HOST=<tv ip>`
 
 ## Install
 
 One line, from a machine on the same Wi-Fi as the TV:
 
 ```sh
-git clone https://github.com/minatolun-dotcom/mytv.git && cd mytv && python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt && TV_HOST=192.168.1.19 TVINPUT_ALLOW=1 tools/disable.sh examples/acer-r4g-gtv/debloat.txt && TV_HOST=192.168.1.19 tools/theme.sh themes/r4g-home
+git clone https://github.com/minatolun-dotcom/mytv.git && cd mytv && python3 -m venv tools/venv && tools/venv/bin/pip install -r tools/requirements.txt && TV_HOST=<tv ip> TVINPUT_ALLOW=1 tools/disable.sh examples/acer-r4g-gtv/debloat.txt && TV_HOST=<tv ip> tools/theme.sh themes/r4g-home
 ```
 
 Or hand this to a coding assistant:
 
 > Clone `https://github.com/minatolun-dotcom/mytv.git` and do what `MYTV.md` says for our TV at
-> `192.168.1.19`: set up the venv, debloat with `examples/acer-r4g-gtv/debloat.txt` (`TVINPUT_ALLOW=1`),
+> `<tv ip>`: set up the venv, debloat with `examples/acer-r4g-gtv/debloat.txt` (`TVINPUT_ALLOW=1`),
 > install our five apps with `tools/install_apps.py` (`apps.txt` says where each comes from), push
 > `themes/r4g-home`, enable `HomeKeyService`, then run the checks in step 6. Never disable
 > `com.google.android.apps.tv.launcherx` or `com.google.android.tungsten.setupwraith` — that is what
@@ -44,7 +44,7 @@ Or hand this to a coding assistant:
 Undo anything with the same file:
 
 ```sh
-TV_HOST=192.168.1.19 tools/restore.sh examples/acer-r4g-gtv/debloat.txt
+TV_HOST=<tv ip> tools/restore.sh examples/acer-r4g-gtv/debloat.txt
 ```
 
 ## Upstream

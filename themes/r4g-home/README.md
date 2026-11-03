@@ -8,8 +8,8 @@ TV**, so pushing this folder restores the exact look, and editing it is how the 
 ## Apply / undo
 
 ```sh
-TV_HOST=192.168.1.19 tools/theme.sh themes/r4g-home    # push it and restart Home
-TV_HOST=192.168.1.19 tools/theme.sh --reset            # back to the launcher's built-in config.xml
+TV_HOST=<tv ip> tools/theme.sh themes/r4g-home    # push it and restart Home
+TV_HOST=<tv ip> tools/theme.sh --reset            # back to the launcher's built-in config.xml
 ```
 
 `tools/theme.sh` pushes `config.json` **and `wallpaper.jpg`** — the picture the TV shows behind Home.

@@ -1,7 +1,7 @@
 # Debloat list: Acer R4G 50" (MOKA R4_GTV, Realtek rtd2851m), Google TV 14, build UKR1.260308 (incremental 5597)
 #
-# Apply:   TV_HOST=192.168.1.19 tools/disable.sh examples/acer-r4g-gtv/debloat.txt
-# Undo:    TV_HOST=192.168.1.19 tools/restore.sh  examples/acer-r4g-gtv/debloat.txt
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/acer-r4g-gtv/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh  examples/acer-r4g-gtv/debloat.txt
 # Run it with TVINPUT_ALLOW=1: this firmware's dumpsys prints neither a requested nor a granted
 # permission block for any package, so the input-driver guard fails closed and skips six harmless ones
 # (hotstar, sonyliv, mxtech, graymatrix, htmlviewer, wallpaperbackup). The check that settles it:

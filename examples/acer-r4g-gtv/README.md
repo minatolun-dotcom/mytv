@@ -11,7 +11,7 @@ on the unit itself on 2026-10-30.
 | Android | Google TV 14 (SDK 34) |
 | Build | `UKR1.260308`, incremental `5597` |
 | Fingerprint | `ACER/ACER_NFF/R4_GTV:14/UKR1.260308/5597:user/release-keys` |
-| ADB | `TV_HOST=192.168.1.19`, port 5555, `ro.adb.secure=1` |
+| ADB | `TV_HOST=<tv ip>`, port 5555, `ro.adb.secure=1` |
 
 Same platform and build as documented in [docs/devices/acer-r4g.md](../../docs/devices/acer-r4g.md) —
 read that first: the firmware re-enables ~60 packages at every **cold** boot.
@@ -40,9 +40,9 @@ read that first: the firmware re-enables ~60 packages at every **cold** boot.
 ## Apply / undo
 
 ```sh
-TV_HOST=192.168.1.19 TVINPUT_ALLOW=1 tools/disable.sh  examples/acer-r4g-gtv/debloat.txt   # debloat
-TV_HOST=192.168.1.19                 tools/restore.sh   examples/acer-r4g-gtv/debloat.txt   # undo
-TV_HOST=192.168.1.19                 tools/theme.sh     themes/r4g-home                     # launcher config
+TV_HOST=<tv ip> TVINPUT_ALLOW=1 tools/disable.sh  examples/acer-r4g-gtv/debloat.txt   # debloat
+TV_HOST=<tv ip>                 tools/restore.sh   examples/acer-r4g-gtv/debloat.txt   # undo
+TV_HOST=<tv ip>                 tools/theme.sh     themes/r4g-home                     # launcher config
 ```
 
 The one-shot runbook for this TV — debloat, Home handover, key service, checks — is

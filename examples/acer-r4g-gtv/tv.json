@@ -1,0 +1,6 @@
+{
+  "tv": "Acer R4G 50\" (MOKA R4_GTV, Realtek rtd2851m), Google TV",
+  "os": "Google TV 14 (SDK 34)",
+  "brand": "Acer",
+  "notes": "This fork's own set: 36 packages disabled with the list, then 33 of them plus the Play Store uninstalled for user 0 after a power cut showed disabling alone is reversible; stock launcherx and setupwraith stay enabled (disabling them bootloops Home) and CleanYourTV takes the Home key via HomeKeyService + stock_home_redirect; dock in themes/r4g-home; [notes](acer-r4g-gtv/README.md)"
+}

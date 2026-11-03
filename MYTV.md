@@ -3,7 +3,7 @@
 Everything below has been run against the set and works. Follow it top to bottom to debloat,
 re-install, or re-customise this TV without rediscovering anything.
 
-Target: **Acer R4G 50"**, `TV_HOST=192.168.1.19`, Google TV 14, `UKR1.260308` (5597).
+Target: **Acer R4G 50"**, `TV_HOST=<tv ip>`, Google TV 14, `UKR1.260308` (5597).
 
 | Doc | What is in it |
 |---|---|
@@ -26,7 +26,7 @@ tools/venv/bin/pip install -r tools/requirements.txt
 TVs drop off Wi-Fi while rebooting, so poll rather than assume:
 
 ```sh
-export TV_HOST=192.168.1.19
+export TV_HOST=<tv ip>
 for i in $(seq 1 60); do adb disconnect $TV_HOST:5555 >/dev/null 2>&1; \
   out=$(timeout 3 adb connect $TV_HOST:5555 2>&1); case "$out" in *connected*) echo up; break;; esac; sleep 1; done
 
@@ -63,9 +63,9 @@ where each app's APK comes from — a GitHub release, F-Droid, or a URL — and 
 newest one from that source, pushes it and installs it:
 
 ```sh
-TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py            # every app in apps.txt
-TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py --dry-run  # resolve only, send nothing
-TV_HOST=192.168.1.19 tools/venv/bin/python -I tools/install_apps.py --update   # install over what is there
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/install_apps.py            # every app in apps.txt
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/install_apps.py --dry-run  # resolve only, send nothing
+TV_HOST=<tv ip> tools/venv/bin/python -I tools/install_apps.py --update   # install over what is there
 ```
 
 - Nothing is ever uninstalled. An app already on the TV is skipped; `--update` runs `pm install -r`,
