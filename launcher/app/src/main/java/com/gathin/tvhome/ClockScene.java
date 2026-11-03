@@ -26,10 +26,11 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * The clock screensaver's scene (layout dream_clock): the huge time centred on the bottom band of the
- * screen, the day and date under it, on Home's wallpaper with DepthLayerView putting the picture in
- * front of the time's lower edge, or on black over a slow ambient glow. Every minute the clock is
- * nudged a few pixels and the glow shifts colour, so nothing burns in while the spot stays put.
+ * The clock screensaver's scene (layout dream_clock): the time centred on the bottom band of the screen, the
+ * day and date under it, on Home's wallpaper with DepthLayerView putting the picture in front of the time's
+ * lower edge, or on black over a slow ambient glow. Every minute the clock is nudged a few pixels and the
+ * glow shifts colour, so nothing burns in while the spot stays put; a ClockRefresh keeps its TextClocks
+ * current where Android would not.
  * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
  */
 final class ClockScene {
@@ -46,6 +47,7 @@ final class ClockScene {
     private final View content;
     /** The time's own view: the depth layer's fade is set from its box, so the date below stays whole. */
     private final View clock;
+    private final ClockRefresh clockRefresh;
     private final ImageView ambient;
     private final DepthLayerView depth;
     private final GradientDrawable glow;
@@ -81,6 +83,7 @@ final class ClockScene {
     ClockScene(View root) {
         content = root.findViewById(R.id.dreamContent);
         clock = root.findViewById(R.id.dreamClock);
+        clockRefresh = new ClockRefresh(content);
         ambient = root.findViewById(R.id.dreamAmbient);
         depth = root.findViewById(R.id.dreamDepth);
         glow = new GradientDrawable();
@@ -100,11 +103,13 @@ final class ClockScene {
         });
         handler.removeCallbacks(tick);
         handler.postDelayed(tick, MOVE_MS);
+        clockRefresh.start();
         if (wallpaperFile != null && !wallpaperShown) loadWallpaper();
     }
 
     void stop() {
         handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
+        clockRefresh.stop();
         content.animate().cancel();
         wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene
     }
