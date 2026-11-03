@@ -86,7 +86,7 @@ Hebrew mirrors the layout:
 - the input selector's icons and labels on the right;
 - dates with the month prefix ב (for example, 19 באוקטובר).
 
-The Clock screensaver right-aligns its date and time. Russian covers every screen, including race
+The Clock screensaver keeps its date right-to-left under the time. Russian covers every screen, including race
 weekends, festival greetings and the Shamsi date. Other languages keep their original layouts.
 
 ## Module cards
@@ -98,6 +98,11 @@ contract: [`docs/specs/card.md`](specs/card.md). Ready-made ones are in [`addons
 [cleanyour.tv/addons](https://cleanyour.tv/addons) shows the themes, switches and add-ons together.
 
 ## Clock screensaver
+
+The huge time sits centred in the bottom band of the screen with the day and date under it, over
+Home's wallpaper (dimmed, `clock_wallpaper_dim`); the picture's lower edge is drawn in front of the
+digits (`DepthLayerView`), so the time sinks into the photo, and the band stops at its baseline so
+the date stays whole.
 
 Pick "Clock" in the TV's screensaver settings, or over ADB:
 

@@ -244,15 +244,17 @@ and then reverts to `0` (ISSUES.md 19). Prove the Wi-Fi service accepts us:
 ### 4d. The clock over the wallpaper: a depth fade
 
 `clock_wallpaper: true` puts the wallpaper behind the clock instead of black (dimmed by
-`clock_wallpaper_dim`, 0–90 %, ours is 50). On top of that the clock itself ends in a fade:
-`DepthLayerView` re-runs the same top-down mask the background scrim uses, so the digits' bottom edge
-dissolves into whatever the wallpaper shows there — the date, being higher up, keeps its top edge.
-Home's idle clock and the system dream share it: `ClockDream` attaches the same `ClockScene`, so the
-depth layer appears with the clock and is torn down when the dream stops.
+`clock_wallpaper_dim`, 0–90 %, ours is 50). The clock itself sits centred in the bottom band of the
+screen, with the day and date under it, and ends in a fade: `DepthLayerView` re-runs the same
+top-down mask the background scrim uses, so the digits' bottom edge dissolves into whatever the
+wallpaper shows there. The layer paints only that band — from 72 % of the time's height to its
+baseline — so the day and date below it stay whole. Home's idle clock and the system dream share it:
+`ClockDream` attaches the same `ClockScene`, so the depth layer appears with the clock and is torn
+down when the dream stops.
 
 The fade only reads where the wallpaper is **bright**: against the original near-black deep-space
 gradient it was invisible (which is why it looked subtle at first). The effect is strongest when the
-picture's subject sits in the top third, right where the digits end.
+picture's subject sits in the bottom third, right where the digits end.
 
 ## 5. Home key service
 

@@ -52,7 +52,10 @@ final class DepthLayerView extends View {
         invalidate();
     }
 
-    /** Where the picture starts taking the clock: fully transparent at start, fully in front by end. */
+    /**
+     * Where the picture starts taking the clock: fully transparent at start, fully in front by end, and
+     * painted only between them — so a view below the band (the date) is never covered.
+     */
     void setMask(float start, float end) {
         if (start == maskStart && end == maskEnd) return;
         maskStart = start;
@@ -69,6 +72,10 @@ final class DepthLayerView extends View {
         float bw = bitmap.getWidth(), bh = bitmap.getHeight();
         if (w <= 0 || h <= 0 || bw <= 0 || bh <= 0) return;
         int layer = canvas.saveLayer(0, 0, w, h, null);
+        // Only the band the fade runs through is painted. Below the last line the picture would cover
+        // whatever sits under it — the day and date under the time — while looking identical to the
+        // background, so the clip is invisible and keeps them whole.
+        canvas.clipRect(0f, Math.max(0f, maskStart), w, Math.min(h, maskEnd));
         // centerCrop, exactly what the ImageView behind this one does with the same picture, so the
         // two line up pixel for pixel and only the clock ever shows a difference.
         float scale = Math.max(w / bw, h / bh);

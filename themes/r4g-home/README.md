@@ -39,7 +39,7 @@ way every folder in [`themes/`](../) is.
 | `stock_home_redirect` | `com.google.android.apps.tv.launcherx` | Stock Home stays on `launcherx` — this firmware re-enables it every cold boot — and sends its home screen straight back to this launcher. |
 | `home_idle_clock_minutes` | `10` | Clock screensaver after 10 idle minutes on Home (`0` = off). |
 | `clock_wallpaper` | `true` | The clock screensaver draws over this theme's wallpaper instead of black, dimmed by `clock_wallpaper_dim`. |
-| `clock_wallpaper_dim` | `50` | How dark that wallpaper sits behind the clock (0–90 %). The clock's bottom edge then fades into the picture (`DepthLayerView`), so the fade only shows where the wallpaper is bright — strongest with a subject in the top third, under the digits. |
+| `clock_wallpaper_dim` | `50` | How dark that wallpaper sits behind the clock (0–90 %). The clock sits centred in the bottom band with the day and date under it, and its bottom edge fades into the picture (`DepthLayerView`), so the fade only shows where the wallpaper is bright — strongest with a subject in the bottom third, under the digits. |
 | `hidden_apps` | 18 packages | Live TV, USB media player, meeting mode, System upgrade, Netflix and YouTube, and everything the firmware re-enables at a **cold** boot (Prime Video, Play Games, esticker, gdpr, scast, fastscreen, timeclock, …). Hiding is what survives a reboot; `pm disable-user` alone does not — Netflix and YouTube were only disabled, so the last power cut brought their tiles back. |
 
 ## Not in this file

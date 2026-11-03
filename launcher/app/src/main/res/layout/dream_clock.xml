@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Screensaver (ClockDream): a lock-screen clock — date over a huge time at the top left — with
-     DepthLayerView putting the wallpaper's lower half in front of the clock's lower edge. -->
+<!-- Screensaver (ClockDream): the huge time centred on the screen's bottom band, the day and date
+     under it — with DepthLayerView putting the wallpaper in front of the time's lower edge. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,20 +18,11 @@
         android:id="@+id/dreamContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:format12Hour="@string/date_format"
-            android:format24Hour="@string/date_format"
-            android:textColor="#E6FFFFFF"
-            android:textSize="30sp"
-            android:fontFamily="@string/font_medium"
-            android:letterSpacing="0.02"
-            android:includeFontPadding="false" />
-
-        <TextClock
+            android:id="@+id/dreamClock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:format12Hour="h:mm"
@@ -41,10 +32,24 @@
             android:fontFamily="@string/font_medium"
             android:letterSpacing="-0.03"
             android:includeFontPadding="false" />
+
+        <TextClock
+            android:id="@+id/dreamDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:format12Hour="@string/date_format"
+            android:format24Hour="@string/date_format"
+            android:textColor="#E6FFFFFF"
+            android:textSize="30sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.02"
+            android:includeFontPadding="false" />
     </LinearLayout>
 
-    <!-- The same picture again, fading in over the clock from just below its middle: the picture is
-         in front (ClockScene sets the two lines from where the clock stands). -->
+    <!-- The same picture again, fading in over the time from just below its middle: the picture is
+         in front (ClockScene sets the two lines from where the time stands, and stops at it, so the
+         day and date below stay whole). -->
     <com.gathin.tvhome.DepthLayerView
         android:id="@+id/dreamDepth"
         android:layout_width="match_parent"

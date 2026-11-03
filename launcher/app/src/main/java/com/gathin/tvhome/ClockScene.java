@@ -26,10 +26,10 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * The clock screensaver's scene (layout dream_clock): a lock-screen composition — the date over a huge
- * time, anchored at the top left (the right in Hebrew) — on Home's wallpaper with DepthLayerView putting
- * the picture in front of the clock's lower edge, or on black over a slow ambient glow. Every minute the
- * clock is nudged a few pixels and the glow shifts colour, so nothing burns in while the spot stays put.
+ * The clock screensaver's scene (layout dream_clock): the huge time centred on the bottom band of the
+ * screen, the day and date under it, on Home's wallpaper with DepthLayerView putting the picture in
+ * front of the time's lower edge, or on black over a slow ambient glow. Every minute the clock is
+ * nudged a few pixels and the glow shifts colour, so nothing burns in while the spot stays put.
  * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
  */
 final class ClockScene {
@@ -44,6 +44,8 @@ final class ClockScene {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
     private final View content;
+    /** The time's own view: the depth layer's fade is set from its box, so the date below stays whole. */
+    private final View clock;
     private final ImageView ambient;
     private final DepthLayerView depth;
     private final GradientDrawable glow;
@@ -78,6 +80,7 @@ final class ClockScene {
     /** root is the inflated dream_clock layout. */
     ClockScene(View root) {
         content = root.findViewById(R.id.dreamContent);
+        clock = root.findViewById(R.id.dreamClock);
         ambient = root.findViewById(R.id.dreamAmbient);
         depth = root.findViewById(R.id.dreamDepth);
         glow = new GradientDrawable();
@@ -235,10 +238,10 @@ final class ClockScene {
     }
 
     /**
-     * The lock-screen spot: date and time at the top left (the right in Hebrew), nudged a few pixels
-     * every minute instead of roaming the screen — the composition stays where a lock screen's clock
-     * sits, the pixels still move so nothing burns in. The glow follows, and the depth layer's fade
-     * lines are set from the clock's own box, so the picture always covers its lower edge.
+     * The bottom band: the time centred on the screen with the day and date under it, nudged a few pixels
+     * every minute instead of roaming — the composition stays where it sits, the pixels still move so
+     * nothing burns in. The glow follows, and the depth layer's fade lines are set from the time's own
+     * box, ending at its baseline, so the picture covers its lower edge and leaves the date whole.
      */
     private void placeClock() {
         View parent = (View) content.getParent();
@@ -246,17 +249,18 @@ final class ClockScene {
         int maxY = Math.max(0, parent.getHeight() - content.getHeight());
         float density = content.getResources().getDisplayMetrics().density;
         float nudge = 12f * density;
-        boolean rtl = content.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
-        float baseX = rtl ? maxX - parent.getWidth() * 0.07f : parent.getWidth() * 0.07f;
+        float baseX = (parent.getWidth() - content.getWidth()) / 2f;
+        float baseY = parent.getHeight() * 0.93f - content.getHeight();
         float x = baseX + (random.nextFloat() * 2f - 1f) * nudge;
-        float y = parent.getHeight() * 0.10f + (random.nextFloat() * 2f - 1f) * nudge;
+        float y = baseY + (random.nextFloat() * 2f - 1f) * nudge;
         content.setX(Math.max(0f, Math.min(x, maxX)));
         content.setY(Math.max(0f, Math.min(y, maxY)));
-        float left = content.getX(), top = content.getY();
-        if (depth != null && content.getHeight() > 0) {
-            float block = content.getHeight();
-            depth.setMask(top + block * 0.72f, top + block * 1.05f);
+        if (depth != null && clock != null && clock.getHeight() > 0) {
+            float top = content.getY() + clock.getTop();
+            float height = clock.getHeight();
+            depth.setMask(top + height * 0.72f, top + height);
         }
+        float left = content.getX(), top = content.getY();
         if (parent.getWidth() > 0 && parent.getHeight() > 0) {
             glow.setGradientCenter((left + content.getWidth() / 2f) / parent.getWidth(),
                     (top + content.getHeight() / 2f) / parent.getHeight());
