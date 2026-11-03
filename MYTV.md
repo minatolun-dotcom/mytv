@@ -190,6 +190,8 @@ Pushes [`themes/r4g-home/config.json`](themes/r4g-home/config.json) and restarts
   listed (Settings, …) still appears in the grid below the dock; `missing apps are
   skipped`, so a package that is later uninstalled cannot break the dock.
 - `home_idle_clock_minutes` → `10`: the clock screensaver after 10 idle minutes on Home (`0` = off).
+- `clock_wallpaper` → `true`, `clock_wallpaper_dim` → `50`: the saver draws over this theme's wallpaper
+  instead of black, dimmed halfway, and the clock's bottom edge fades into the picture (§4d).
 - `dock_opacity` → `30`: the dock band at 30% opacity, so the wallpaper shows through it. Picking 100/70/50/30
   in Launcher settings still wins, until the next run of this command clears the pick.
 - `wifi_status_color` + `wifi_status_warnings` → the Wi-Fi icon tints with the connection: **green** online,
@@ -238,6 +240,19 @@ cmd location set-location-enabled true'
 Use `cmd location set-location-enabled` — on this set `settings put secure location_mode 3` reads back `3`
 and then reverts to `0` (ISSUES.md 19). Prove the Wi-Fi service accepts us:
 `tools/tv.py 'logcat -d | grep checkCallersLocationPermission | tail -1'` → `com.gathin.tvhome: ok`.
+
+### 4d. The clock over the wallpaper: a depth fade
+
+`clock_wallpaper: true` puts the wallpaper behind the clock instead of black (dimmed by
+`clock_wallpaper_dim`, 0–90 %, ours is 50). On top of that the clock itself ends in a fade:
+`DepthLayerView` re-runs the same top-down mask the background scrim uses, so the digits' bottom edge
+dissolves into whatever the wallpaper shows there — the date, being higher up, keeps its top edge.
+Home's idle clock and the system dream share it: `ClockDream` attaches the same `ClockScene`, so the
+depth layer appears with the clock and is torn down when the dream stops.
+
+The fade only reads where the wallpaper is **bright**: against the original near-black deep-space
+gradient it was invisible (which is why it looked subtle at first). The effect is strongest when the
+picture's subject sits in the top third, right where the digits end.
 
 ## 5. Home key service
 

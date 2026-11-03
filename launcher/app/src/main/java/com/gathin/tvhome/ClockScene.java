@@ -26,8 +26,10 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * The clock screensaver's scene (layout dream_clock): the thin clock and date on black over a slow ambient
- * glow. Every minute the clock drifts to a new spot and the glow shifts colour, so nothing burns in.
+ * The clock screensaver's scene (layout dream_clock): a lock-screen composition — the date over a huge
+ * time, anchored at the top left (the right in Hebrew) — on Home's wallpaper with DepthLayerView putting
+ * the picture in front of the clock's lower edge, or on black over a slow ambient glow. Every minute the
+ * clock is nudged a few pixels and the glow shifts colour, so nothing burns in while the spot stays put.
  * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
  */
 final class ClockScene {
@@ -43,6 +45,7 @@ final class ClockScene {
     private final Random random = new Random();
     private final View content;
     private final ImageView ambient;
+    private final DepthLayerView depth;
     private final GradientDrawable glow;
     private int colorIndex;
     private int glowColor;
@@ -76,6 +79,7 @@ final class ClockScene {
     ClockScene(View root) {
         content = root.findViewById(R.id.dreamContent);
         ambient = root.findViewById(R.id.dreamAmbient);
+        depth = root.findViewById(R.id.dreamDepth);
         glow = new GradientDrawable();
         glow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         ambient.setBackground(glow);
@@ -169,6 +173,7 @@ final class ClockScene {
                 ambient.setBackground(null);
                 ambient.setImageDrawable(new LayerDrawable(new Drawable[]{
                         new BitmapDrawable(res, bmp), new ColorDrawable(shade)}));
+                depth.show(bmp, shade);   // the same picture in front of the clock's lower edge
             });
         }, "clock-wallpaper").start();
     }
@@ -229,18 +234,32 @@ final class ClockScene {
         }).start();
     }
 
-    /** A random spot that keeps the whole clock on screen, with the glow centred behind it. */
+    /**
+     * The lock-screen spot: date and time at the top left (the right in Hebrew), nudged a few pixels
+     * every minute instead of roaming the screen — the composition stays where a lock screen's clock
+     * sits, the pixels still move so nothing burns in. The glow follows, and the depth layer's fade
+     * lines are set from the clock's own box, so the picture always covers its lower edge.
+     */
     private void placeClock() {
         View parent = (View) content.getParent();
         int maxX = Math.max(0, parent.getWidth() - content.getWidth());
         int maxY = Math.max(0, parent.getHeight() - content.getHeight());
-        float x = maxX * (0.1f + 0.8f * random.nextFloat());
-        float y = maxY * (0.1f + 0.8f * random.nextFloat());
-        content.setX(x);
-        content.setY(y);
+        float density = content.getResources().getDisplayMetrics().density;
+        float nudge = 12f * density;
+        boolean rtl = content.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+        float baseX = rtl ? maxX - parent.getWidth() * 0.07f : parent.getWidth() * 0.07f;
+        float x = baseX + (random.nextFloat() * 2f - 1f) * nudge;
+        float y = parent.getHeight() * 0.10f + (random.nextFloat() * 2f - 1f) * nudge;
+        content.setX(Math.max(0f, Math.min(x, maxX)));
+        content.setY(Math.max(0f, Math.min(y, maxY)));
+        float left = content.getX(), top = content.getY();
+        if (depth != null && content.getHeight() > 0) {
+            float block = content.getHeight();
+            depth.setMask(top + block * 0.72f, top + block * 1.05f);
+        }
         if (parent.getWidth() > 0 && parent.getHeight() > 0) {
-            glow.setGradientCenter((x + content.getWidth() / 2f) / parent.getWidth(),
-                    (y + content.getHeight() / 2f) / parent.getHeight());
+            glow.setGradientCenter((left + content.getWidth() / 2f) / parent.getWidth(),
+                    (top + content.getHeight() / 2f) / parent.getHeight());
         }
     }
 

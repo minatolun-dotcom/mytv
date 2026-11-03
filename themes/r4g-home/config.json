@@ -1,5 +1,7 @@
 {
   "home_idle_clock_minutes": 10,
+  "clock_wallpaper": true,
+  "clock_wallpaper_dim": 50,
   "wallpaper_true_color": true,
   "ambient_glow": false,
   "icon_only_buttons": true,
