@@ -119,6 +119,8 @@ class TV:
                         self.clear_count += 1
                     elif self.off_at is not None and self.now - self.off_at >= self.minimum_off:
                         self.ready = self.now + self.delay
+            elif args[:3] == ['pm', 'list', 'packages']:
+                output += 'package:com.gathin.tvhome\n' if args[3:] == ['com.gathin.tvhome'] else ''
             elif args[:3] == ['dumpsys', 'activity', 'services']:
                 output += ''.join(service(x, user=self.user, connected=x in self.bound)
                                   for x in restart.components(self.value)
@@ -222,6 +224,42 @@ class Recovery(unittest.TestCase):
         start = next(x for x in tv.calls if x.startswith('am start '))
         self.assertIn('-c android.intent.category.HOME', start)
         self.assertNotIn(' -n ', start)
+
+    def test_stock_home_without_the_key_helper_puts_it_back(self):
+        """A force-stop takes HomeKeyService off the list and Android clears the flag with it (#20)."""
+        tv = TV(saved='', flag='0', home='com.google.android.apps.tv.launcherx/.home.HomeActivity')
+        with patch.dict(os.environ, {'CYT_THEME_HOME_KEY': '1'}):
+            restart.restart(tv, tv.pause)
+        self.assertTrue(set(restart.components(HOME)) <= set(restart.components(tv.value)))
+        self.assertEqual(tv.flag, '1', 'the helper cannot bind with the flag left off')
+        self.assertTrue(set(restart.components(HOME)) <= tv.bound)
+
+    def test_key_helper_is_not_added_without_the_redirect(self):
+        tv = TV(saved='', flag='0', home='com.google.android.apps.tv.launcherx/.home.HomeActivity')
+        with patch.dict(os.environ, {}, clear=True):
+            restart.restart(tv, tv.pause)
+        self.assertEqual(tv.flag, '0')
+        self.assertEqual(tv.value, '')
+        self.assertFalse(any(' put secure ' in x for x in tv.calls))
+
+    def test_key_helper_is_not_added_when_the_launcher_is_home(self):
+        tv = TV(saved='')
+        with patch.dict(os.environ, {'CYT_THEME_HOME_KEY': '1'}):
+            restart.restart(tv, tv.pause)
+        self.assertEqual(tv.value, '')
+        self.assertFalse(any(' put secure ' in x for x in tv.calls))
+
+    def test_key_helper_is_not_added_when_the_package_is_not_installed(self):
+        tv = TV(saved='', home='com.google.android.apps.tv.launcherx/.home.HomeActivity')
+        original = tv.shell
+        def shell(command, read_timeout_s=None):
+            return (original(command, read_timeout_s).replace('package:com.gathin.tvhome', '')
+                    if 'pm list packages' in command else original(command, read_timeout_s))
+        tv.shell = shell
+        with patch.dict(os.environ, {'CYT_THEME_HOME_KEY': '1'}):
+            restart.restart(tv, tv.pause)
+        self.assertFalse(set(restart.components(HOME)) & set(restart.components(tv.value)))
+        self.assertFalse(any(' put secure ' in x for x in tv.calls))
 
     def test_unbound_timeout_is_bounded_and_leaves_saved_list(self):
         tv = TV(never=True)

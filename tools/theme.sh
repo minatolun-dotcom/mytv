@@ -140,6 +140,23 @@ else:
     print("object" if isinstance(theme, dict) else "not an object")
 ' "$1" 2>/dev/null
 }
+# Does this theme say the stock Home redirects to this launcher (stock_home_redirect)? Then the launcher is
+# reached through its Home key, and theme_restart.py may put HomeKeyService back on the accessibility list if a
+# force-stop took it off (ISSUES.md #20). A theme without the key says the launcher is Home itself, where no
+# helper is needed, so the restart leaves the list alone.
+theme_redirects_home() {
+  "$PY" -I -c '
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8-sig") as handle:
+        theme = json.load(handle)
+except (OSError, ValueError):
+    print("0")
+else:
+    value = theme.get("stock_home_redirect") if isinstance(theme, dict) else None
+    print("1" if isinstance(value, str) and value.strip() else "0")
+' "$1" 2>/dev/null || echo 0
+}
 case "$(theme_json_kind "$THEME/config.json")" in
   object) ;;
   "not an object") echo "$THEME/config.json is not a JSON object of theme keys, so the launcher would ignore" \
@@ -190,6 +207,6 @@ else
   tv "$(del wallpapers/captions.txt)" >/dev/null
 fi
 tv "printf '%s' '$REVISION' > $TMP-theme_revision; $(put theme_revision)" >/dev/null
-"$PY" -I theme_restart.py
+CYT_THEME_HOME_KEY="$(theme_redirects_home "$THEME/config.json")" "$PY" -I theme_restart.py
 echo applied
 echo "Theme $(basename "$THEME") is on the TV. Undo with: tools/theme.sh --reset"

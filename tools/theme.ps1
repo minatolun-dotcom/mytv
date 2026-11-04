@@ -145,7 +145,16 @@ if (Test-Path $captions -PathType Leaf) {
     Invoke-Tv tv.py (Drop 'wallpapers/captions.txt') | Out-Null
 }
 Invoke-Tv tv.py "printf '%s' '$revision' > $tmp-theme_revision; $(Put 'theme_revision')" | Out-Null
+# A theme with stock_home_redirect reaches this launcher through its Home key, so the restart may put
+# HomeKeyService back on the accessibility list (theme_restart.py, ISSUES.md #20).
+$homeKey = '0'
+try {
+    $themeConfig = Get-Content -Raw -LiteralPath (Join-Path $Theme 'config.json') | ConvertFrom-Json
+    if ($themeConfig.stock_home_redirect) { $homeKey = '1' }
+} catch { }
+$env:CYT_THEME_HOME_KEY = $homeKey
 & $py -I theme_restart.py
+Remove-Item Env:CYT_THEME_HOME_KEY -ErrorAction SilentlyContinue
 if ($LASTEXITCODE) { throw 'Home restart recovery failed' }
 Write-Host 'applied'
 Write-Host "Theme $(Split-Path $Theme -Leaf) is on the TV. Undo with: tools\theme.ps1 -TvHost $TvHost -Reset"

@@ -4,6 +4,14 @@
 Used by theme.sh and theme.ps1, and it takes no arguments: --help prints this text (no tools/venv, no
 TV_HOST and no TV needed for it), and a word it does not take is refused before the TV is asked anything.
 
+When Home is the stock launcher (stock_home_redirect, which the caller reports as CYT_THEME_HOME_KEY=1)
+and the accessibility list has none of this launcher's helpers, the Home key is what opens the launcher, so
+this restart puts HomeKeyService back on the list: a force-stop - the launcher's own install, or an earlier
+theme push - takes the service off it and nothing else puts it back, which leaves the stock Home in front
+(ISSUES.md #20). Android clears accessibility_enabled with the last service, so that flag says nothing
+about what the person chose; the theme's own stock_home_redirect is the signal instead, and a theme
+without it (the launcher is Home itself, no helper needed) never touches the list.
+
 Exit status: 0 Home is up and the key helpers it had are bound again, or --help printed this text; 1 the TV
 ran the restart and it failed (a command it refused, or a helper that did not stay bound); 2 nothing was
 asked of the TV - a word it does not take, tools/venv is missing, TV_HOST is unset, or the TV did not
@@ -17,6 +25,9 @@ import sys
 import time
 
 PACKAGE = "com.gathin.tvhome"
+# The launcher's Home-key helper, as the accessibility list spells it. Only used to restore the list when
+# Home is not this launcher and the helper has gone missing.
+HOME_HELPER = PACKAGE + "/.HomeKeyService"
 SERVICES = "enabled_accessibility_services"
 FLAG = "accessibility_enabled"
 ACTION = "android.accessibilityservice.AccessibilityService"
@@ -79,6 +90,12 @@ def bound_services(output, user):
     return found
 
 
+def installed(dev, package=PACKAGE):
+    """Whether the package is on the TV, so a helper is never written for an app that is not there."""
+    output = shell(dev, f"pm list packages {package}")
+    return any(line.strip() == "package:" + package for line in output.splitlines())
+
+
 def settings_command(user, services, flag):
     value = shlex.quote(":".join(services.values()))
     return (f"settings --user {user} put secure {SERVICES} {value} && "
@@ -109,6 +126,21 @@ def restart(dev, pause=time.sleep):
     helpers = {component for component in saved if component.split("/", 1)[0] == PACKAGE}
     home = shell(dev, "cmd package resolve-activity --brief --user " + str(user)
                  + " -a android.intent.action.MAIN -c android.intent.category.HOME")
+    home_activity = home.splitlines()[-1].strip() if home.splitlines() else ""
+    if (not helpers and os.environ.get("CYT_THEME_HOME_KEY") == "1"
+            and not home_activity.startswith(PACKAGE + "/") and installed(dev)):
+        # Home is the stock launcher, so this launcher is reached through its Home key, and the list has none
+        # of its helpers: a force-stop (the install, or an earlier theme push) removed the service and
+        # nothing put it back, so the stock launcher answers Home. Put it back with the rest of the list; the
+        # binding check below then proves it took. Deliberately narrow: a launcher that IS Home needs no
+        # helper, and an accessibility subsystem switched off stays off.
+        restored = components(HOME_HELPER)
+        saved.update(restored)
+        helpers = set(restored)
+        # Android clears accessibility_enabled when the last service leaves the list, which is exactly the
+        # state a force-stop leaves behind - not a person switching accessibility off. The theme asked for
+        # the redirect, so the helper goes back on with the flag.
+        enabled = "1"
     def write(services, flag):
         shell(dev, settings_command(user, services, flag))
 
