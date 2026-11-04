@@ -3,6 +3,7 @@
   "clock_wallpaper": true,
   "clock_wallpaper_dim": 50,
   "wallpaper_true_color": true,
+  "wallpaper_dim": 45,
   "ambient_glow": false,
   "icon_only_buttons": true,
   "icon_only_inputs": true,

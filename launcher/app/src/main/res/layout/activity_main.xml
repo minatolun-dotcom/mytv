@@ -131,6 +131,9 @@
             android:fontFamily="@string/font_light"
             android:letterSpacing="-0.02"
             android:includeFontPadding="false"
+            android:shadowColor="#CC000000"
+            android:shadowDy="3"
+            android:shadowRadius="28"
             android:singleLine="true" />
 
         <!-- Cinematic shelf only: when the app was last opened, and the dock position dots. -->

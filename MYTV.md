@@ -308,15 +308,20 @@ buttons sit over near-pure black: the band's rows measured **0.0011** mean lumin
 **0.0001**, and the bottom third carries almost no rain at all — so even a brightened copy of it smears to a
 flat wash, and the glass read as a grey slab whichever way it was tinted. Not a bug in the layer: pushing a
 green-over-red test picture and sampling a column inside the band showed the colour ramping over about 60
-rows, against a 2-row flip outside it. Two things fixed it:
+rows, against a 2-row flip outside it. What was tried, in order, and what stuck:
 
-- **The picture carries something to transmit.** `gamma 0.55` then `add 4%` lifts the rain so its text is far
-  brighter than the black around it (a blur of thin bright text reads as a haze; a blur of grey reads as
-  grey), plus a soft red glow behind the dock and a faint violet one behind the top bar, composited into the
-  picture itself. The band's rows now measure **0.09** and the circles **0.11** — the glow was halved from a first pass
-(0.12 / 0.18) that read too warm over the rain.
-- **The glass carries its own material**, so the shapes read as glass even where the backdrop is dark — the
-  body (28% white fading to 12%), the inner shadow, the bright rim and the 3.5% refraction.
+- **Lifting the rain** (`gamma 0.55`, `add 4%`) and adding a red glow behind the dock and a violet one behind
+  the top bar made the glass show *something* (band rows 0.09), but thin text and a smooth glow both blur to
+  themselves, so the frost still read as a tinted panel rather than a melted picture.
+- **A picture with large, bright detail behind the glass** is what actually shows a blur. `wallpaper.jpg` is
+  now a black-hole still cropped so its accretion disc runs behind the dock band (band rows **0.44**, bright
+  detail right where the glass sits), with `wallpaper_dim: 45` so the white app name stays legible over it.
+  The band visibly smears the disc; red-rain's rain is kept on the branch's earlier commits only.
+- **The glass carries its own material** either way, so the shapes read as glass even where the backdrop is
+  dark — the body (28% white fading to 12%), the inner shadow, the bright rim and the 3.5% refraction.
+
+The lesson for the next wallpaper: choose one with big bright shapes where the dock and the circles sit, and
+check it with `magick wallpaper.jpg -crop 1920x180+0+750 -format '%[fx:mean]' info:` before blaming the blur.
 
 Verifying a blur claim, rather than trusting a screenshot: put a high-contrast test picture behind the band
 (green above, red below) and sample rows across the band's edge. Outside the band the colour flips green→red
