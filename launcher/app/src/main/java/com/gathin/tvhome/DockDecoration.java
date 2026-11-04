@@ -3,6 +3,7 @@ package com.gathin.tvhome;
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
+import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -18,6 +19,10 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final float density;
     private final Paint band = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** The band's glint, its inner shadow and its bright rim - the same liquid-glass material as the pills. */
+    private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint depth = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint lens = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
 
     /** Extra band below the tiles for their names (always_show_names), in px. */
@@ -28,6 +33,8 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final boolean evenPadding;
     /** The band's top and bottom the glass gradient was made for; it is remade when they move. */
     private float shaderTop = Float.NaN, shaderBottom = Float.NaN;
+    /** The band's left and right the glint was made for, so a wider band's glint stays in its corner. */
+    private float shaderLeft = Float.NaN, shaderRight = Float.NaN;
     /** Draw the band and its edge (config.xml dock_band); false leaves the tiles floating on the wallpaper. */
     private final boolean bandVisible;
     /** single_row: the tiles after the dock share its row, so they take the same offsets to stay level with it. */
@@ -64,6 +71,12 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(density);
         edge.setColor(lightGlass ? 0x38FFFFFF : translucent ? 0x26FFFFFF : 0x1FFFFFFF);
+        // The pills' liquid-glass lens (BackdropGlassDrawable): a bright rim fading down, the inner shadow under
+        // it, and the glint off the top-left corner.
+        lens.setStyle(Paint.Style.STROKE);
+        lens.setStrokeWidth(1.6f * density);
+        depth.setStyle(Paint.Style.STROKE);
+        depth.setStrokeWidth(2f * density);
     }
 
     /** Concentric corners: the band's radius is the tiles' radius plus the band's padding around them. */
@@ -163,12 +176,24 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
             rect.right = Math.min(rect.right, parent.getWidth() - density);
         }
         rect.bottom += namesRoom;
-        if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom)) {
-            // The pills' glass (BackdropGlassDrawable: white, 18% fading to 8%), a little fainter over this much larger area.
-            band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, 0x24FFFFFF, 0x0DFFFFFF,
+        if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom
+                || rect.left != shaderLeft || rect.right != shaderRight)) {
+            // The pills' glass (BackdropGlassDrawable: white, 28% fading to 12%), a little fainter over this much larger area.
+            band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, 0x47FFFFFF, 0x1FFFFFFF,
                     Shader.TileMode.CLAMP));
+            // The same lens the pills carry: a rim that dims towards the bottom, the inner shadow that gives it
+            // thickness, and a wide glint off the top-left corner of the band.
+            lens.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,
+                    0x64FFFFFF, 0x26FFFFFF, Shader.TileMode.CLAMP));
+            depth.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,
+                    new int[]{0x47000000, 0x00000000, 0x22FFFFFF},
+                    new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
+            sheen.setShader(new RadialGradient(rect.left + rect.width() * 0.22f, rect.top + rect.height() * 0.1f,
+                    Math.max(rect.width(), rect.height()) * 0.62f, 0x26FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
             shaderTop = rect.top;
             shaderBottom = rect.bottom;
+            shaderLeft = rect.left;
+            shaderRight = rect.right;
         }
         int bl = Math.round(rect.left), bt = Math.round(rect.top), br = Math.round(rect.right), bb = Math.round(rect.bottom);
         if (bl != lastBand.left || bt != lastBand.top || br != lastBand.right || bb != lastBand.bottom
@@ -179,6 +204,13 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
             if (bandListener != null) bandListener.run();
         }
         c.drawRoundRect(rect, radius, radius, band);
-        c.drawRoundRect(rect, radius, radius, edge);
+        if (lightGlass) {
+            // The liquid-glass layers over the band's body: glint, inner shadow, bright rim.
+            c.drawRoundRect(rect, radius, radius, sheen);
+            c.drawRoundRect(rect, radius, radius, depth);
+            c.drawRoundRect(rect, radius, radius, lens);
+        } else {
+            c.drawRoundRect(rect, radius, radius, edge);
+        }
     }
 }

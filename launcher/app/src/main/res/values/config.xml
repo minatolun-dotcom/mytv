@@ -294,7 +294,10 @@
     <bool name="launcher_settings_button">false</bool>
     <!-- The dock band as light frosted glass, like the Inputs, Wi-Fi and Settings pills, so a sky or wallpaper shows
          through it. false (the default) keeps the solid near-black band, or the cinematic shelf's dark glass. Can
-         also be set with "dock_glass": true in a theme's config.json. -->
+         also be set with "dock_glass": true in a theme's config.json. The glass is a liquid-glass material, not
+         a flat tint: the body (white fading downwards), a glint off the top-left corner, a dark inner shadow under
+         the top rim that reads as thickness, a bright rim that dims towards the bottom, and the backdrop magnified
+         about 3.5% about the shape's own centre, so the light that crosses the rim looks bent. -->
     <bool name="dock_glass">false</bool>
     <!-- Real backdrop blur behind the dock band: a blurred copy of the wallpaper, clipped to the band's rounded
          rectangle, in dp of blur radius (0-40; about 24 reads as frosted glass). 0, the default, keeps no blur
@@ -303,7 +306,11 @@
          band to sit behind, so the dock's own layer does nothing - but above 0 the same blur and glass also
          frost the top-right pills' circles, the glass popups' backgrounds and the settings panel the remote's
          Settings button opens (a shared blurred copy of the screen, drawn inside those shapes on every API level;
-         the panel reads the copy Home already made, so it never blurs the wallpaper a second time). -->
+         the panel reads the copy Home already made, so it never blurs the wallpaper a second time). The band, the
+         pills and every popup share one liquid-glass material on top of the blur: the body, a glint off the
+         top-left corner, the inner shadow under the top rim and the bright rim that dims downwards. The blur can
+         only smear what the picture has there, so over a near-black wallpaper the glass reads through its body and
+         rim alone; a picture with texture behind the band shows the frost. -->
     <integer name="dock_blur">0</integer>
     <!-- Draw the dock band and its edge. false leaves the tiles floating on the wallpaper (config.xml dock_band). -->
     <bool name="dock_band">true</bool>

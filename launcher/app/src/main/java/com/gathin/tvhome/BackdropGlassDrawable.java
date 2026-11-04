@@ -9,16 +9,20 @@ import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 
 /**
- * A frosted-glass background in the shape of its own bounds: the blurred wallpaper (the shared blurred copy
- * of the screen, drawn at the view's screen position so the smear lines up with the picture behind it), the
- * pills'/dock's white glass fading downwards, and the same thin rim. Used as the background of the top-right
- * pills and of the glass popups' panels, so the frost is part of the background and can never cover content.
+ * A liquid-glass background in the shape of its own bounds, in four layers: the blurred wallpaper (the shared
+ * blurred copy of the screen, drawn at the view's screen position so the smear lines up with the picture
+ * behind it), the pills'/dock's white body fading downwards, a soft sheen off the top-left corner, and the
+ * moulded edge - a dark inner shadow under the top rim that gives the glass thickness, and a bright rim that
+ * fades towards the bottom, so the shape reads as a lens and not as a flat slab. Used as the background of the
+ * top-right pills and of the glass popups' panels, so the frost is part of the background and can never cover
+ * content.
  *
  * While the view is focused the slab turns solid white, like the pills' focused state always was.
  *
@@ -31,8 +35,19 @@ public class BackdropGlassDrawable extends Drawable {
     private final Paint scrim = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint rim = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint solid = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** The glint in the top-left corner: liquid glass catches the room's light there, not only at the rim. */
+    private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** The dark inner shadow just under the top rim, which is what makes the shape look moulded. */
+    private final Paint depth = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** The bright rim, fading towards the bottom where the glass catches the light less. */
+    private final Paint lens = new Paint(Paint.ANTI_ALIAS_FLAG);
+    /** How much the backdrop is magnified inside the shape: about 3.5% at the edges reads as bent light. */
+    private static final float REFRACTION = 1.035f;
     private final RectF rect = new RectF();
     private final Matrix shaderMatrix = new Matrix();
+    /** Where the shape sits on screen, so the shader shows the part of the picture behind it. */
+    private int offsetX, offsetY;
+    private final float density;
     private final float radius;
     private final int scrimTop, scrimBottom;
     /** The shared blurred copy of the screen-sized wallpaper; null before the first picture or when it was dropped. */
@@ -53,21 +68,27 @@ public class BackdropGlassDrawable extends Drawable {
     /** The constructor DrawableInflater uses for pill_glass.xml: drawables are inflated with no arguments.
      *  The density is the system's, which is this window's too; a 21dp pill corner, the pills' white glass. */
     public BackdropGlassDrawable() {
-        this(Resources.getSystem().getDisplayMetrics().density, 21f, 0x2EFFFFFF, 0x14FFFFFF);
+        this(Resources.getSystem().getDisplayMetrics().density, 21f, 0x47FFFFFF, 0x1FFFFFFF);
     }
 
     /** @param density     px per dp.
      *  @param radiusDp    the shape's corner radius in dp (a 21dp pill at 42dp height is a circle).
      *  @param scrimTop    the glass fill at the top of the shape, an ARGB colour carrying its alpha.
-     *  @param scrimBottom the same at the bottom (the pills fade from 18% to 8% white). */
+     *  @param scrimBottom the same at the bottom (the pills and panels fade from 28% to 12% white, milky enough
+     *                     to read as frosted glass over a dark picture and still show it through). */
     BackdropGlassDrawable(float density, float radiusDp, int scrimTop, int scrimBottom) {
         radius = radiusDp * density;
         this.scrimTop = scrimTop;
         this.scrimBottom = scrimBottom;
+        this.density = density;
         rim.setStyle(Paint.Style.STROKE);
         rim.setStrokeWidth(density);
         rim.setColor(0x38FFFFFF);
         solid.setColor(0xF5FFFFFF);
+        lens.setStyle(Paint.Style.STROKE);
+        lens.setStrokeWidth(1.6f * density);
+        depth.setStyle(Paint.Style.STROKE);
+        depth.setStrokeWidth(2f * density);
     }
 
     /** The blurred screen at the picture's own size; null when there is no picture (the plain glass stays). */
@@ -79,7 +100,8 @@ public class BackdropGlassDrawable extends Drawable {
 
     /** Where this shape sits on screen, so the shader shows the part of the picture that is behind it. */
     void setScreenOffset(int x, int y) {
-        shaderMatrix.setTranslate(-x, -y);
+        offsetX = x;
+        offsetY = y;
         applyShader();
         invalidateSelf();
     }
@@ -89,6 +111,11 @@ public class BackdropGlassDrawable extends Drawable {
             blurPaint.setShader(null);
             return;
         }
+        // The picture behind the glass, then a slight magnification about the shape's own centre: the light that
+        // crosses the rim is bent, so what is inside the glass is a touch larger than what is outside it. That
+        // small shift at the edges is what reads as a lens rather than as a pane of tinted glass.
+        shaderMatrix.setTranslate(-offsetX, -offsetY);
+        shaderMatrix.postScale(REFRACTION, REFRACTION, rect.centerX(), rect.centerY());
         BitmapShader shader = new BitmapShader(backdrop, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         shader.setLocalMatrix(shaderMatrix);
         blurPaint.setShader(shader);
@@ -195,6 +222,21 @@ public class BackdropGlassDrawable extends Drawable {
         rect.set(bounds);
         scrim.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom,
                 scrimTop, scrimBottom, Shader.TileMode.CLAMP));
+        // The lens: a bright rim that dims towards the bottom, an inner shadow that reads as thickness under
+        // it, and a wide glint off the top-left corner. All three in the shape's own coordinates, so a pill
+        // and a popup panel look like the same material at their own sizes.
+        if (bounds.width() <= 0 || bounds.height() <= 0) return;
+        lens.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom,
+                0x6BFFFFFF, 0x29FFFFFF, Shader.TileMode.CLAMP));
+        depth.setShader(new LinearGradient(0, bounds.top, 0, bounds.bottom,
+                new int[]{0x4D000000, 0x00000000, 0x24FFFFFF},
+                new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP));
+        sheen.setShader(new RadialGradient(bounds.left + bounds.width() * 0.3f,
+                bounds.top + bounds.height() * 0.05f,
+                Math.max(bounds.width(), bounds.height()) * 0.65f,
+                0x2BFFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
+        // The shader is centred on the shape, so a new size needs it again (refraction).
+        applyShader();
     }
 
     @Override
@@ -206,13 +248,19 @@ public class BackdropGlassDrawable extends Drawable {
         }
         if (backdrop != null) canvas.drawRoundRect(rect, radius, radius, blurPaint);
         canvas.drawRoundRect(rect, radius, radius, scrim);
-        canvas.drawRoundRect(rect, radius, radius, rim);
+        canvas.drawRoundRect(rect, radius, radius, sheen);
+        canvas.drawRoundRect(rect, radius, radius, depth);
+        canvas.drawRoundRect(rect, radius, radius, lens);
     }
 
     @Override
     public void setAlpha(int alpha) {
         blurPaint.setAlpha(alpha);
         rim.setAlpha(alpha);
+        scrim.setAlpha(alpha);
+        sheen.setAlpha(alpha);
+        depth.setAlpha(alpha);
+        lens.setAlpha(alpha);
         invalidateSelf();
     }
 

@@ -3727,7 +3727,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      *  rows by construction - the frost can never cover the content. */
     private void attachGlassBackdrop(PopupWindow popup, View panel) {
         if (dockBlurDp <= 0) return;
-        BackdropGlassDrawable glass = new BackdropGlassDrawable(density, 20f, 0x24FFFFFF, 0x0DFFFFFF);
+        BackdropGlassDrawable glass = new BackdropGlassDrawable(density, 20f, 0x47FFFFFF, 0x1FFFFFFF);
         panel.setBackground(glass);   // replaces glass_panel's dark slab
         glass.setBackdrop(blurredBackdrop);
         glassBackdrops.add(glass);

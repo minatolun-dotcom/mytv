@@ -291,6 +291,38 @@ The firmware's `FallbackHome` re-enables its 60-package list only on a **cold** 
 standby. After unplugging the TV, re-check step 6 — anything on that list comes back enabled, which is
 why `hidden_apps` rather than `pm disable-user` is what keeps those tiles away.
 
+## 8. The look: liquid glass, and why the wallpaper is lifted
+
+`dock_glass` + `dock_blur: 24` give Home one glass material everywhere: the dock band, the four top-right
+circles (inputs, network, reorder, settings), and every popup they open, including the settings panel the
+remote's Settings key shows. The band's blur is the view's `RenderEffect` (`DockBlurView`); the circles and
+popups draw a shared software-blurred copy of the same picture at their own place on screen, so the frost
+lines up with what is behind each shape. On top of the blur sits the glass itself
+(`BackdropGlassDrawable`, `DockDecoration`): the white body fading downwards, a glint off the top-left
+corner, a dark inner shadow under the top rim that gives it thickness, a bright rim that dims towards the
+bottom, and — in the pills and popups — the frost magnified about 3.5 % about the shape's own centre, so the
+light that crosses the rim looks bent and the shape reads as a lens rather than a pane of tinted glass.
+
+**The blur can only smear what the picture has.** With red-rain's own `wallpaper.jpg` the band and the
+buttons sit over near-pure black: the band's rows measured **0.0011** mean luminance, the button area
+**0.0001**, and the bottom third carries almost no rain at all — so even a brightened copy of it smears to a
+flat wash, and the glass read as a grey slab whichever way it was tinted. Not a bug in the layer: pushing a
+green-over-red test picture and sampling a column inside the band showed the colour ramping over about 60
+rows, against a 2-row flip outside it. Two things fixed it:
+
+- **The picture carries something to transmit.** `gamma 0.55` then `add 4%` lifts the rain so its text is far
+  brighter than the black around it (a blur of thin bright text reads as a haze; a blur of grey reads as
+  grey), plus a soft red glow behind the dock and a faint violet one behind the top bar, composited into the
+  picture itself. The band's rows now measure **0.09** and the circles **0.11** — the glow was halved from a first pass
+(0.12 / 0.18) that read too warm over the rain.
+- **The glass carries its own material**, so the shapes read as glass even where the backdrop is dark — the
+  body (28% white fading to 12%), the inner shadow, the bright rim and the 3.5% refraction.
+
+Verifying a blur claim, rather than trusting a screenshot: put a high-contrast test picture behind the band
+(green above, red below) and sample rows across the band's edge. Outside the band the colour flips green→red
+inside 10 rows; inside it ramps over about 40 — that ramp is the blur. A single screenshot of a dark wallpaper
+cannot tell "no blur" from "nothing to blur".
+
 ## Known behaviour on this set
 
 | Thing | State | Why |
