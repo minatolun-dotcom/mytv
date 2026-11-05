@@ -69,3 +69,4 @@ rule sit on its wanted list until a screenshot arrives.
 | `clock_format` | <img src="switches/clock_format.jpg" width="320" alt="clock_format on a TV"> |
 | `glow_snap` | <img src="switches/glow_snap.jpg" width="320" alt="glow_snap on a TV: the glow in Netflix red behind the dock"> |
 | `dock_blur` | <img src="switches/dock_blur.jpg" width="320" alt="dock_blur: the frosted dock band over the blurred wallpaper on a TV"> |
+| `auto_ink` | <img src="switches/auto_ink.jpg" width="320" alt="auto_ink: the greeting, clock, date and app name dark over a light wallpaper on a TV"> |

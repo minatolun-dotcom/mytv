@@ -352,3 +352,4 @@ cannot tell "no blur" from "nothing to blur".
 | `com.apps.biz.mt` (meeting mode) | disabled + hidden | has a `BootReceiver` |
 | `launcherx`, `setupwraith` | enabled, always | cold-boot re-enable + RecoveryActivity loop |
 | 6 input-guard skips | disabled with `TVINPUT_ALLOW=1` | firmware prints no permission block |
+| Updater module card | answered **Shown**, tile present | the card does stand in for the tile, but under `single_row` every tile is a dock tile and dock tiles have no name line, while `ambient_glow` is off here — so the card's label, caption and accent colour have nowhere to show. Hold OK on Settings → Module cards still names it (label, package, signing digest, Shown), and the hero names it ("Updater") while it is focused. A card whose label differs from its app's label is only distinguishable from a plain tile in `always_show_names` or `cinematic_home` |
