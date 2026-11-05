@@ -52,8 +52,11 @@ The launcher's own page has these rows, top to bottom:
 
 - **Reorder apps**, only with `launcher_settings_button`, the same as the menu's.
 - **Apps per row** 4, 5, 6 or 7; **Rows below dock** 0 to 3, how many rows of tiles stay visible under the
-  dock band; **Dock band opacity** 100%, 70%, 50% or 30%. The last two only do anything while the dock is
-  its own row (`dock_row`, on by default).
+  dock band; **Dock band opacity**, a slider from 5% to 100% in steps of 5% — the D-pad's left and right move
+  it and the row reads the value back. It is the band's own strength: with `dock_glass` off, how opaque the
+  band's colour is; with it on, the share of the pills' glass body that is drawn, so a low value leaves the
+  blurred wallpaper all but alone behind a thin sheen. The last two only do anything while the dock is its
+  own row (`dock_row`, on by default).
 - **Clock**: **System** follows the TV's 12- or 24-hour setting; **12-hour** or **24-hour** sets the launcher's
   clocks (Home and the clock screensaver) to that, whatever the TV uses (`clock_format` in a theme).
 - **Wallpaper**: one picture from the theme's collection (or its `wallpaper.jpg`), **None**, or **Theme

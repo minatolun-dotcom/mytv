@@ -305,6 +305,15 @@ inner shadow under the top rim that gives it thickness, a bright rim that dims t
 the pills and popups — the frost magnified about 3.5 % about the shape's own centre, so the light that
 crosses the rim looks bent and the shape reads as a lens rather than a pane of tinted glass.
 
+How strong that white body is on the **dock band** is `dock_opacity`, which Launcher settings now has as a
+slider from 5 % (`DOCK_OPACITY_MIN` in `LauncherSettingsActivity`) to 100 % in steps of 5 — one D-pad press per
+step, the row reading the value back. It used to be four choices whose lowest was 30, and while `dock_glass`
+was on it did nothing at all, because the glass has no dark colour to scale. `DockDecoration` now draws the body
+(`BackdropGlassDrawable.BODY_TOP`/`BODY_BOTTOM`) at that share, so the band can go from the pills' full white
+down to a whisper over the blur; measured between two tiles on this picture, the band reads 0.805 mean
+luminance at 100, 0.779 at 30 and 0.772 at 5. The pills, the popups and the settings panel keep their own full
+body, and the blur itself does not change — it is drawn by `DockBlurView`, outside the glass.
+
 **The blur can only smear what the picture has.** With red-rain's own `wallpaper.jpg` the band and the
 buttons sit over near-pure black: the band's rows measured **0.0011** mean luminance, the button area
 **0.0001**, and the bottom third carries almost no rain at all — so even a brightened copy of it smears to a

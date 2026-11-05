@@ -238,7 +238,7 @@ class ShippedConfigValuesTest(unittest.TestCase):
         # integer() is `int i = ((Number) v).intValue(); return i < min || i > max ? fallback : i;`, so
         # both ends are refused, and so is a fraction on the wrong side of one.
         for key, value in (("columns", 9), ("columns", 0), ("wifi_label_width", 320), ("wifi_label_width", -1),
-                           ("dock_opacity", 29), ("sky_intensity", 101)):
+                           ("dock_opacity", 4), ("sky_intensity", 101)):
             with self.subTest(key=key, value=value):
                 reported = dict(problems({key: value}, self.kinds))
                 self.assertIn(key, reported)

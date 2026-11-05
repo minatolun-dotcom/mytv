@@ -102,7 +102,7 @@ class SetValueTest(unittest.TestCase):
     def test_a_number_key_refuses_a_value_outside_the_tables_range(self):
         # integer() keeps its own default for a number outside min..max, so set must not write one either.
         for key, value in (("columns", "9"), ("columns", "0"), ("rows_below_dock", "4"),
-                           ("sky_intensity", "101"), ("clock_wallpaper_dim", "91"), ("dock_opacity", "29")):
+                           ("sky_intensity", "101"), ("clock_wallpaper_dim", "91"), ("dock_opacity", "4")):
             with self.subTest(key=key, value=value):
                 self.config.unlink(missing_ok=True)
                 refusal = self.set_key(key, value)

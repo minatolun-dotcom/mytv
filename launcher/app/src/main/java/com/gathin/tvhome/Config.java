@@ -205,7 +205,8 @@ final class Config {
     final List<File> wallpapers;
     final int wallpaperRotationMinutes;
     final int wallpaperDim;
-    /** The dock band's opacity in percent (config.json dock_opacity, 30-100): below 100 the wallpaper shows through. */
+    /** The dock band's opacity in percent (config.json dock_opacity, 5-100): below 100 the wallpaper shows through,
+     *  and with dock_glass on it is the share of the glass body's white that is drawn (Launcher settings: a slider). */
     final int dockOpacity;
     /**
      * Playback order for a wallpaper collection: {@code sequential} or {@code shuffle}. Missing or
@@ -686,7 +687,7 @@ final class Config {
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
-        int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
+        int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 5, 100);
         dockOpacity = chosenDockOpacity(choices.getInt(DOCK_OPACITY_KEY, -1), dockOpacity);
         clockFormat = choices.getString(CLOCK_FORMAT_KEY, clockFormat);
         String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
@@ -783,7 +784,7 @@ final class Config {
 
     /** The dock band opacity chosen in Launcher settings, or the theme's when none (or an out-of-range one) is saved. */
     static int chosenDockOpacity(int chosen, int theme) {
-        return chosen >= 30 && chosen <= 100 ? chosen : theme;
+        return chosen >= 5 && chosen <= 100 ? chosen : theme;
     }
 
     private static String fileStamp(File file) {

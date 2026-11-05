@@ -29,6 +29,8 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final float namesRoom;
     /** Light glass like the top bar's pills (config.xml dock_glass): a white tint that fades downwards. */
     private final boolean lightGlass;
+    /** dock_opacity as a share of the glass body's white (1 is the pills' full strength), so 5 % is a whisper. */
+    private final float bodyScale;
     /** Padding all round the tiles equal to the gap between them (config.xml dock_even_padding). */
     private final boolean evenPadding;
     /** The band's top and bottom the glass gradient was made for; it is remade when they move. */
@@ -50,7 +52,9 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     /**
      * @param translucent the cinematic shelf's band: the artwork and the glow show through it.
      * @param names       the dock tiles show their names, so the band reaches down over them.
-     * @param opacity     the plain band's opacity in percent (dock_opacity), so a wallpaper can show through it.
+     * @param opacity     the band's opacity in percent (dock_opacity), 5 to 100: the plain band's alpha, and the
+     *                    share of the glass body's white that is drawn (100 is the full pill glass), so a slider on
+     *                    the TV thins the band in either mode.
      * @param lightGlass  a light frosted band like the pills, for a sky or wallpaper behind it.
      * @param evenPadding the band's padding is the gap between the tiles on all four sides (dock_even_padding).
      * @param bandVisible false skips the band and its edge, so the tiles float on the wallpaper (dock_band).
@@ -67,7 +71,8 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         this.lightGlass = lightGlass;
         this.evenPadding = evenPadding;
         this.bandVisible = bandVisible;
-        band.setColor(translucent ? 0x8C121014 : (Math.round(opacity * 2.55f) << 24) | 0x141416);
+        band.setColor(translucent ? 0x8C121014 : (Math.round(Math.max(0, Math.min(100, opacity)) * 2.55f) << 24) | 0x141416);
+        this.bodyScale = Math.max(0.05f, Math.min(1f, opacity / 100f));
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(density);
         edge.setColor(lightGlass ? 0x38FFFFFF : translucent ? 0x26FFFFFF : 0x1FFFFFFF);
@@ -77,6 +82,12 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         lens.setStrokeWidth(1.6f * density);
         depth.setStyle(Paint.Style.STROKE);
         depth.setStrokeWidth(2f * density);
+    }
+
+    /** One of the glass body's colours at this band's share of the strength (dock_opacity). */
+    private int scaled(int argb) {
+        int alpha = Math.round(((argb >>> 24) & 0xFF) * bodyScale);
+        return (alpha << 24) | (argb & 0x00FFFFFF);
     }
 
     /** Concentric corners: the band's radius is the tiles' radius plus the band's padding around them. */
@@ -179,9 +190,11 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom
                 || rect.left != shaderLeft || rect.right != shaderRight)) {
             // The pills' glass (BackdropGlassDrawable: white, 20% fading to 7%), the same body they carry, so the
-            // band and the pills read as one material over the wallpaper.
+            // band and the pills read as one material over the wallpaper - at the share dock_opacity asks for, so
+            // the slider thins the glass instead of doing nothing while dock_glass is on.
             band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,
-                    BackdropGlassDrawable.BODY_TOP, BackdropGlassDrawable.BODY_BOTTOM, Shader.TileMode.CLAMP));
+                    scaled(BackdropGlassDrawable.BODY_TOP), scaled(BackdropGlassDrawable.BODY_BOTTOM),
+                    Shader.TileMode.CLAMP));
             // The same lens the pills carry: a rim that dims towards the bottom, the inner shadow that gives it
             // thickness, and a wide glint off the top-left corner of the band.
             lens.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,

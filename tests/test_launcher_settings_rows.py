@@ -150,12 +150,15 @@ class ScreenRows(unittest.TestCase):
         under_dock = numbered("rows_below_dock_label", self.layout_text)
         self.assertEqual(columns, ["4", "5", "6", "7"])
         self.assertEqual(under_dock, ["0", "1", "2", "3"])
-        opacities = re.search(r"DOCK_OPACITIES\s*=\s*\{([0-9,\s]+)\}", self.activity_text).group(1)
-        opacities = [value.strip() for value in opacities.split(",") if value.strip()]
+        # The opacity row is a slider, not four choices: the page states its ends and its step, and one D-pad press
+        # is one step, so a value the page names is one the row can be set to.
+        low = int(re.search(r"DOCK_OPACITY_MIN\s*=\s*(\d+)", self.activity_text).group(1))
+        step = int(re.search(r"DOCK_OPACITY_STEP\s*=\s*(\d+)", self.activity_text).group(1))
         section = normalise(self.section)
         self.assertIn("%s, %s, %s or %s" % tuple(columns), section)
         self.assertIn("%s to %s" % (under_dock[0], under_dock[-1]), section)
-        self.assertIn("%s%%, %s%%, %s%% or %s%%" % tuple(opacities), section)
+        self.assertIn("%d%% to 100%%" % low, section)
+        self.assertIn("steps of %d%%" % step, section)
 
     def test_a_row_the_readme_leaves_out_is_reported(self):
         rows = [("reorderChoice", "Reorder apps"), ("walls", "Wallpaper")]

@@ -18,7 +18,7 @@
     "org.localsend.localsend_app"
   ],
   "auto_ink": true,
-  "dock_opacity": 30,
+  "dock_opacity": 100,
   "dock_glass": true,
   "dock_blur": 24,
   "single_row": true,

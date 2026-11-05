@@ -10,6 +10,7 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -30,8 +31,10 @@ public final class LauncherSettingsActivity extends Activity {
     private SharedPreferences choices;
     private final TextView[] columnChoices = new TextView[4];
     private final TextView[] rowChoices = new TextView[4];
-    private static final int[] DOCK_OPACITIES = {100, 70, 50, 30};
-    private final TextView[] dockChoices = new TextView[DOCK_OPACITIES.length];
+    /** dock_opacity's slider: 100 is the pills' full glass, and the bottom is a whisper of it over the blur. */
+    private static final int DOCK_OPACITY_MIN = 5, DOCK_OPACITY_STEP = 5;
+    private SeekBar dockOpacitySeek;
+    private TextView dockOpacityValue;
     private static final String[] CLOCK_FORMATS = {"system", "12", "24"};
     private final TextView[] clockChoices = new TextView[CLOCK_FORMATS.length];
     private TextView wallpaperChoice;
@@ -89,18 +92,25 @@ public final class LauncherSettingsActivity extends Activity {
                 refresh();
             });
         }
-        int[] dockIds = {R.id.dock100, R.id.dock70, R.id.dock50, R.id.dock30};
-        for (int i = 0; i < dockIds.length; i++) {
-            final int value = DOCK_OPACITIES[i];
-            dockChoices[i] = findViewById(dockIds[i]);
-            dockChoices[i].setOnClickListener(v -> {
+        dockOpacitySeek = findViewById(R.id.dockOpacitySeek);
+        dockOpacityValue = findViewById(R.id.dockOpacityValue);
+        dockOpacitySeek.setMax((100 - DOCK_OPACITY_MIN) / DOCK_OPACITY_STEP);
+        dockOpacitySeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int value = DOCK_OPACITY_MIN + progress * DOCK_OPACITY_STEP;
+                dockOpacityValue.setText(getString(R.string.dock_opacity_percent, value));
                 if (dockOpacity == value) return;
                 dockOpacity = value;
                 choices.edit().putInt(Config.DOCK_OPACITY_KEY, value).apply();
                 changed();
-                refresh();
-            });
-        }
+            }
+
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
         int[] clockIds = {R.id.clockSystem, R.id.clock12, R.id.clock24};
         for (int i = 0; i < clockIds.length; i++) {
             final String value = CLOCK_FORMATS[i];
@@ -120,7 +130,6 @@ public final class LauncherSettingsActivity extends Activity {
         if (getResources().getBoolean(R.bool.rtl_app_grid)) {
             reverseRow(columnChoices);
             reverseRow(rowChoices);
-            reverseRow(dockChoices);
             reverseRow(clockChoices);
         }
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
@@ -299,9 +308,8 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < rowChoices.length; i++) {
             rowChoices[i].setSelected(rowsBelowDock == i);
         }
-        for (int i = 0; i < dockChoices.length; i++) {
-            dockChoices[i].setSelected(dockOpacity == DOCK_OPACITIES[i]);
-        }
+        dockOpacitySeek.setProgress(Math.round((dockOpacity - DOCK_OPACITY_MIN) / (float) DOCK_OPACITY_STEP));
+        dockOpacityValue.setText(getString(R.string.dock_opacity_percent, dockOpacity));
         for (int i = 0; i < clockChoices.length; i++) {
             clockChoices[i].setSelected(CLOCK_FORMATS[i].equals(clockFormat));
         }
