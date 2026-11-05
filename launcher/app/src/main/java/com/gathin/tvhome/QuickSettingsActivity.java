@@ -46,7 +46,8 @@ public final class QuickSettingsActivity extends Activity {
         android.graphics.Bitmap backdrop = BackdropGlassDrawable.sharedBackdrop();
         if (backdrop != null) {
             BackdropGlassDrawable glass = new BackdropGlassDrawable(
-                    getResources().getDisplayMetrics().density, 20f, 0x47FFFFFF, 0x1FFFFFFF);
+                    getResources().getDisplayMetrics().density, 20f,
+                    BackdropGlassDrawable.BODY_TOP, BackdropGlassDrawable.BODY_BOTTOM);
             glass.setBackdrop(backdrop);
             panelView.setBackground(glass);
             panelView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, orr, ob) -> {

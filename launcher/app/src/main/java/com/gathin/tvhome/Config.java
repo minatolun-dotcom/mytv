@@ -230,6 +230,9 @@ final class Config {
     final int homeIdleClockMinutes;
     /** The dock band as light frosted glass like the pills (config.xml, dock_glass); false keeps the solid band. */
     final boolean dockGlass;
+    /** Dark text over a light wallpaper (config.xml, auto_ink): the header, the app name and the popup text turn
+     *  dark when the zone behind them is bright, so white text does not wash out. */
+    final boolean autoInk;
     /** Blurred wallpaper behind the dock band, inside the top-right pills' circles and the glass popups'
      *  backgrounds, in dp of radius (config.xml, dock_blur); 0 keeps no blur. */
     final int dockBlur;
@@ -293,7 +296,7 @@ final class Config {
                    int wallpaperRotationMinutes, int wallpaperDim, int dockOpacity, String wallpaperOrder, boolean overlayApplied,
                    Festival festival, int[] inputKeycodes, List<String> appKeys, String stockHomeRedirect,
                    List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
-                   boolean keyFilter, boolean dockGlass, int dockBlur, String glowStyle, boolean wallpaperCaptions,
+                   boolean keyFilter, boolean dockGlass, boolean autoInk, int dockBlur, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
                    Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean inputsConnectedOnly, boolean inputsCecStateOnly,
                    int openOnStartNetworkWait, boolean openOnStartOnWake, boolean iconOnlyVpn, String clockFormat, boolean backOpensClock, boolean glowSnap) {
@@ -383,6 +386,7 @@ final class Config {
         this.fadeRows = fadeRows;
         this.homeIdleClockMinutes = homeIdleClockMinutes;
         this.dockGlass = dockGlass;
+        this.autoInk = autoInk;
         this.dockBlur = dockBlur;
         this.dockEvenPadding = dockEvenPadding;
         this.dockBand = dockBand;
@@ -520,6 +524,7 @@ final class Config {
         boolean inputsCecStateOnly = res.getBoolean(R.bool.inputs_cec_state_only);
         String clockFormat = res.getString(R.string.clock_format);
         boolean dockGlass = res.getBoolean(R.bool.dock_glass);
+        boolean autoInk = res.getBoolean(R.bool.auto_ink);
         int dockBlur = res.getInteger(R.integer.dock_blur);
         boolean dockEvenPadding = res.getBoolean(R.bool.dock_even_padding);
         boolean dockBand = res.getBoolean(R.bool.dock_band);
@@ -635,6 +640,7 @@ final class Config {
             inputsCecStateOnly = bool(json, "inputs_cec_state_only", inputsCecStateOnly);
             clockFormat = string(json, CLOCK_FORMAT_KEY, clockFormat);
             dockGlass = bool(json, "dock_glass", dockGlass);
+            autoInk = bool(json, "auto_ink", autoInk);
             dockBlur = integer(json, "dock_blur", dockBlur, 0, 40);
             dockEvenPadding = bool(json, "dock_even_padding", dockEvenPadding);
             dockBand = bool(json, "dock_band", dockBand);
@@ -717,7 +723,7 @@ final class Config {
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, restoreKeyServices, wallpaperEnabled, wallpaper,
                 wallpapers, rotationMinutes, wallpaperDim, dockOpacity, wallpaperOrder, applied, festival, inputKeycodes, appKeys, stockHomeRedirect,
                 json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow, appGlow, fadeRows,
-                Math.max(0, idleClockMinutes), keyFilter, dockGlass, dockBlur, glowStyle, wallpaperCaptions, handleViewInputs, tileMenu, dockEvenPadding,
+                Math.max(0, idleClockMinutes), keyFilter, dockGlass, autoInk, dockBlur, glowStyle, wallpaperCaptions, handleViewInputs, tileMenu, dockEvenPadding,
                 dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
                 consumeVolumeKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,

@@ -200,6 +200,9 @@
                     android:textSize="12sp"
                     android:fontFamily="@string/font_medium"
                     android:letterSpacing="0.22"
+                    android:shadowColor="#B3000000"
+                    android:shadowDy="2"
+                    android:shadowRadius="14"
                     android:textAllCaps="true" />
 
                 <LinearLayout
@@ -218,7 +221,10 @@
                         android:textSize="52sp"
                         android:fontFamily="@string/font_light"
                         android:letterSpacing="-0.04"
-                        android:includeFontPadding="false" />
+                        android:includeFontPadding="false"
+                        android:shadowColor="#B3000000"
+                        android:shadowDy="3"
+                        android:shadowRadius="26" />
 
                     <TextClock
                         android:id="@+id/ampm"
@@ -233,6 +239,9 @@
                         android:textSize="15sp"
                         android:fontFamily="@string/font_medium"
                         android:letterSpacing="0.08"
+                        android:shadowColor="#B3000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="14"
                         android:textAllCaps="true" />
 
                     <View
@@ -266,6 +275,9 @@
                             android:fontFamily="@string/font_regular"
                             android:letterSpacing="0.02"
                             android:includeFontPadding="false"
+                            android:shadowColor="#B3000000"
+                            android:shadowDy="2"
+                            android:shadowRadius="14"
                             android:visibility="gone" />
 
                         <TextClock
@@ -283,6 +295,9 @@
                             android:textSize="14sp"
                             android:fontFamily="@string/font_regular"
                             android:letterSpacing="0.14"
+                            android:shadowColor="#B3000000"
+                            android:shadowDy="2"
+                            android:shadowRadius="14"
                             android:textAllCaps="true" />
 
                         <!-- Lunar date ("Lunar 13/9 · Year of the Horse"), shown when lunar_date is on. -->

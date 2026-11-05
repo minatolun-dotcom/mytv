@@ -178,9 +178,10 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         rect.bottom += namesRoom;
         if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom
                 || rect.left != shaderLeft || rect.right != shaderRight)) {
-            // The pills' glass (BackdropGlassDrawable: white, 28% fading to 12%), a little fainter over this much larger area.
-            band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, 0x47FFFFFF, 0x1FFFFFFF,
-                    Shader.TileMode.CLAMP));
+            // The pills' glass (BackdropGlassDrawable: white, 20% fading to 7%), the same body they carry, so the
+            // band and the pills read as one material over the wallpaper.
+            band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,
+                    BackdropGlassDrawable.BODY_TOP, BackdropGlassDrawable.BODY_BOTTOM, Shader.TileMode.CLAMP));
             // The same lens the pills carry: a rim that dims towards the bottom, the inner shadow that gives it
             // thickness, and a wide glint off the top-left corner of the band.
             lens.setShader(new LinearGradient(0, rect.top, 0, rect.bottom,

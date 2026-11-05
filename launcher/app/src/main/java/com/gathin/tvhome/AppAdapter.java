@@ -186,6 +186,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final boolean dockRow;
     /** config single_row: tiles sit in one sideways row, each as wide as a grid column would be. */
     private final boolean singleRow;
+    /** auto_ink: the wallpaper behind the tiles is light, so the names under them are dark instead of white. */
+    private boolean inkDark;
     /** config always_show_names: the alpha of an unfocused tile's name (0 hides it). */
     private final float restNameAlpha;
     /** cinematic_home: only then does a launch record the last-opened app the shelf uses. */
@@ -257,6 +259,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
      * Rebuilds the tiles. A shown module card stands in for every tile of its package (same component,
      * so focus follows it); hidden_apps wins over a card, and a card's package in dock_apps takes that slot.
      */
+    /** auto_ink: a new picture was judged light (or dark again), so the names under the tiles follow it. */
+    void setInk(boolean dark) {
+        if (inkDark == dark) return;
+        inkDark = dark;
+        notifyDataSetChanged();
+    }
+
     void reload(List<Cards.Card> cards, List<ResolveInfo> leanback) {
         PackageManager pm = ctx.getPackageManager();
         // The LEANBACK query is shared with the module-card check (MainActivity); copy it before adding
@@ -475,6 +484,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         h.card.setVisibility(View.VISIBLE);
         h.card.setFocusable(true);
         h.name.setText(e.name);
+        h.name.setTextColor(inkDark ? 0xE6000000 : 0xF2FFFFFF);
         // The dock has no labels, unless always_show_names asks for them (DockDecoration then makes room in the band).
         // In a single row every tile is the dock's kind: the big title above names it.
         boolean dockKind = DockSlots.inDockRow(dockRow, singleRow, position, dockSize);

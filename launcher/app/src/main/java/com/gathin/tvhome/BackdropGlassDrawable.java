@@ -68,8 +68,12 @@ public class BackdropGlassDrawable extends Drawable {
     /** The constructor DrawableInflater uses for pill_glass.xml: drawables are inflated with no arguments.
      *  The density is the system's, which is this window's too; a 21dp pill corner, the pills' white glass. */
     public BackdropGlassDrawable() {
-        this(Resources.getSystem().getDisplayMetrics().density, 21f, 0x47FFFFFF, 0x1FFFFFFF);
+        this(Resources.getSystem().getDisplayMetrics().density, 21f, BODY_TOP, BODY_BOTTOM);
     }
+
+    /** The glass body's white, 20% at the top fading to 7%: light enough that the picture behind reads
+     *  through the pills, the dock band and the popups, and still milky enough to frost what is behind. */
+    static final int BODY_TOP = 0x33FFFFFF, BODY_BOTTOM = 0x12FFFFFF;
 
     /** @param density     px per dp.
      *  @param radiusDp    the shape's corner radius in dp (a 21dp pill at 42dp height is a circle).

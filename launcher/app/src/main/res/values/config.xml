@@ -299,6 +299,12 @@
          the top rim that reads as thickness, a bright rim that dims towards the bottom, and the backdrop magnified
          about 3.5% about the shape's own centre, so the light that crosses the rim looks bent. -->
     <bool name="dock_glass">false</bool>
+    <!-- Dark text over a light wallpaper: when the picture behind the header is bright, the greeting, the clock,
+         the date, the app name above the dock and the popup/pill text turn dark (white becomes black at the same
+         alpha), so they read instead of washing out. The zone the clock sits in decides, measured on the picture
+         as drawn, wallpaper_dim included. Off by default, so a theme with a dark or a mid-tone wallpaper keeps its
+         white text; a theme can set "auto_ink": true. -->
+    <bool name="auto_ink">false</bool>
     <!-- Real backdrop blur behind the dock band: a blurred copy of the wallpaper, clipped to the band's rounded
          rectangle, in dp of blur radius (0-40; about 24 reads as frosted glass). 0, the default, keeps no blur
          layer at all - the launcher targets 1 GB TVs, so the cost is opt-in. Needs Android 12 (RenderEffect);

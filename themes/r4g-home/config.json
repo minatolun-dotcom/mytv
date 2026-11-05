@@ -3,7 +3,7 @@
   "clock_wallpaper": true,
   "clock_wallpaper_dim": 50,
   "wallpaper_true_color": true,
-  "wallpaper_dim": 45,
+  "wallpaper_dim": 40,
   "ambient_glow": false,
   "icon_only_buttons": true,
   "icon_only_inputs": true,
@@ -17,6 +17,7 @@
     "net.mrowser",
     "org.localsend.localsend_app"
   ],
+  "auto_ink": true,
   "dock_opacity": 30,
   "dock_glass": true,
   "dock_blur": 24,

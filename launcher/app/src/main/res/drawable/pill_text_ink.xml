@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- auto_ink: the pills' ink over a light wallpaper. The focused pill turns solid white, so its text is
+     dark there too - the reverse of pill_text, which is white with dark text on focus. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF111111" />
+    <item android:color="#E6000000" />
+</selector>

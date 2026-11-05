@@ -158,6 +158,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final List<BackdropGlassDrawable> glassBackdrops = new ArrayList<>();
     /** The shared blurred copy of the screen those backgrounds draw; one per wallpaper. */
     private Bitmap blurredBackdrop;
+    /** auto_ink: whether the light-wallpaper switch is on, and whether the picture up now is light. */
+    private boolean autoInk, inkDark;
+    /** auto_ink: whether a picture has been judged yet (the first one may be dark, the same as the default). */
+    private boolean inkApplied;
+    /** auto_ink's text views, with the colour and shadow each was designed with. */
+    private final List<TextView> inkText = new ArrayList<>();
+    private final List<Integer> inkBase = new ArrayList<>();
+    private final List<float[]> inkShadow = new ArrayList<>();
+    private final List<Integer> inkShadowColor = new ArrayList<>();
+    /** auto_ink's pills, with the ink and icon tint the style gave them. */
+    private final List<TextView> inkPills = new ArrayList<>();
+    private final List<ColorStateList> inkPillText = new ArrayList<>();
+    private final List<ColorStateList> inkPillTint = new ArrayList<>();
+
     /** dock_blur's radius in dp, copied from the config at load (the frosted surfaces outlive onCreate's local cfg). */
     private int dockBlurDp;
     private GlassView glass;
@@ -494,6 +508,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         reducedMotion = cfg.reducedMotion;
         dockRow = cfg.dockRow;
         singleRow = cfg.singleRow;
+        autoInk = cfg.autoInk;
         focusOvershoot = cfg.focusOvershoot;
         festival = cfg.festival;
         festive = festival.active(LocalDate.now());
@@ -713,7 +728,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             dockBlurView.setRenderEffect(RenderEffect.createBlurEffect(
                     cfg.dockBlur * density, cfg.dockBlur * density, Shader.TileMode.CLAMP));
             dockDecoration.setBandListener(() -> grid.post(this::positionDockBlur));
-            wallpaperPlayer.setOnWallpaperChanged(this::onWallpaperChanged);
             dockBlurView.setWallpaper(wallpaperPlayer.currentBitmap());
             blurredBackdrop = BackdropGlassDrawable.blurOf(wallpaperPlayer.currentBitmap(), cfg.dockBlur * density);
             BackdropGlassDrawable.share(blurredBackdrop);
@@ -721,6 +735,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) { positionDockBlur(); }
             });
         }
+        // auto_ink follows every new picture too, and it is wanted without a blur, so the listener is not part of
+        // dock_blur's block above (onWallpaperChanged is null-safe for the pieces dock_blur alone creates).
+        wallpaperPlayer.setOnWallpaperChanged(this::onWallpaperChanged);
         if (cfg.fadeRows) TopFade.attach(grid, 48 * density);
         // dock_blur's frosted top-right pills are backgrounds, so they need no band rectangle nor Android 12.
         if (cfg.dockBlur > 0) attachTopGlass();
@@ -1011,6 +1028,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (savedInstanceState == null && !openLauncherSettingsIfAsked(getIntent()) && !openLibraryIfAsked(getIntent())) {
             openInputsIfAsked(getIntent());
         }
+        // auto_ink last, once the header, the pills and the adapter all exist: the picture that is up is judged
+        // before the first frame, so a bright theme never shows white text over it even for a moment.
+        registerInkViews();
+        applyInk(wallpaperPlayer.currentBitmap());
     }
 
     /**
@@ -1770,12 +1791,98 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockBlurView.setBand(left, top, left + band.width(), top + band.height(), dockDecoration.bandRadius());
     }
 
+    // ---- auto_ink: dark text over a light wallpaper ---------------------------------------------
+
+    /**
+     * auto_ink: remembers the header texts, the app name and the pills with the colours they were designed
+     * with, so a light picture can flip them to dark and a dark one put them back exactly as they were.
+     * Called once the whole header exists (the pills are set up after the grid).
+     */
+    private void registerInkViews() {
+        if (!autoInk) return;
+        for (int id : new int[]{R.id.greeting, R.id.clock, R.id.ampm, R.id.date, R.id.shamsiDate, R.id.heroName}) {
+            View v = findViewById(id);
+            if (!(v instanceof TextView)) continue;
+            TextView text = (TextView) v;
+            inkText.add(text);
+            inkBase.add(text.getCurrentTextColor());
+            inkShadow.add(new float[]{text.getShadowRadius(), text.getShadowDx(), text.getShadowDy()});
+            inkShadowColor.add(text.getShadowColor());
+        }
+        // The Wi-Fi pill is left alone: wifi_status_color paints its icon green, orange or red, and that reads on
+        // a light picture as it is.
+        for (int id : new int[]{R.id.btnInputs, R.id.btnReorder, R.id.btnSettings}) {
+            View v = findViewById(id);
+            if (!(v instanceof TextView)) continue;
+            TextView pill = (TextView) v;
+            inkPills.add(pill);
+            inkPillText.add(pill.getTextColors());
+            inkPillTint.add(pill.getCompoundDrawableTintList());
+        }
+    }
+
+    /** auto_ink: the colour a line should have now - its own, or its inverse while the picture is light. */
+    private int ink(int argb) {
+        return inkDark ? Ink.flip(argb) : argb;
+    }
+
+    /**
+     * auto_ink: judges a new picture and, if that answer changed, recolours the header, the app name and the
+     * pills. Each line keeps its alpha, so the greeting stays fainter than the clock. A dark line needs no long
+     * white halo - that is what made white text readable here - so it carries a short light one instead, enough
+     * to keep the glyph edges off a bright patch of the picture.
+     */
+    private void applyInk(Bitmap picture) {
+        if (!autoInk) return;
+        boolean light = Ink.light(picture);
+        if (light == inkDark && inkApplied) return;
+        inkDark = light;
+        inkApplied = true;
+        for (int i = 0; i < inkText.size(); i++) {
+            TextView v = inkText.get(i);
+            v.setTextColor(ink(inkBase.get(i)));
+            float[] shadow = inkShadow.get(i);
+            if (light) {
+                v.setShadowLayer(3 * density, 0, density, 0x40FFFFFF);
+            } else {
+                v.setShadowLayer(shadow[0], shadow[1], shadow[2], inkShadowColor.get(i));
+            }
+        }
+        ColorStateList dark = light ? getColorStateList(R.drawable.pill_text_ink) : null;
+        for (int i = 0; i < inkPills.size(); i++) {
+            TextView pill = inkPills.get(i);
+            pill.setTextColor(dark != null ? dark : inkPillText.get(i));
+            pill.setCompoundDrawableTintList(dark != null ? dark : inkPillTint.get(i));
+        }
+        if (adapter != null) adapter.setInk(light);
+    }
+
+    /** auto_ink for a popup row: the title, its status line and the row's icon, which the layout tints white. */
+    private void inkRow(View row) {
+        if (!inkDark) return;
+        View title = row.findViewById(R.id.title);
+        if (title instanceof TextView) {
+            ((TextView) title).setTextColor(getColorStateList(R.drawable.pill_text_ink));
+        }
+        View status = row.findViewById(R.id.status);
+        if (status instanceof TextView) {
+            ((TextView) status).setTextColor(getColorStateList(R.drawable.pill_text_dim_ink));
+        }
+        View icon = row.findViewById(R.id.icon);
+        if (icon instanceof ImageView) {
+            ((ImageView) icon).setImageTintList(getColorStateList(R.drawable.pill_text_ink));
+        }
+    }
+
     /** dock_blur: the band's layer and the frosted pill/panel backgrounds follow the wallpaper together. */
     private void onWallpaperChanged(Bitmap bitmap) {
         if (dockBlurView != null) dockBlurView.setWallpaper(bitmap);
-        blurredBackdrop = BackdropGlassDrawable.blurOf(bitmap, dockBlurDp * density);
-        BackdropGlassDrawable.share(blurredBackdrop);
-        for (BackdropGlassDrawable glass : glassBackdrops) glass.setBackdrop(blurredBackdrop);
+        if (dockBlurDp > 0) {
+            blurredBackdrop = BackdropGlassDrawable.blurOf(bitmap, dockBlurDp * density);
+            BackdropGlassDrawable.share(blurredBackdrop);
+            for (BackdropGlassDrawable glass : glassBackdrops) glass.setBackdrop(blurredBackdrop);
+        }
+        applyInk(bitmap);
     }
 
     /** dock_blur: the top-right pills' own backgrounds frosted over the blurred wallpaper - no plate behind the
@@ -2848,7 +2955,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } else {
             greeting.setText(greetingName.isEmpty() ? getString(res)
                     : getString(R.string.greeting_with_name, getString(res), greetingName));
-            greeting.setTextColor(greetingColor);
+            greeting.setTextColor(ink(greetingColor));   // auto_ink keeps the greeting in step with the header
         }
         if (shamsi) shamsiDate.setText(Shamsi.today(getResources()));
         if (lunar) lunarDate.setText(Lunar.today(getResources(), lunarOffset));
@@ -3727,7 +3834,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      *  rows by construction - the frost can never cover the content. */
     private void attachGlassBackdrop(PopupWindow popup, View panel) {
         if (dockBlurDp <= 0) return;
-        BackdropGlassDrawable glass = new BackdropGlassDrawable(density, 20f, 0x47FFFFFF, 0x1FFFFFFF);
+        BackdropGlassDrawable glass = new BackdropGlassDrawable(density, 20f,
+                BackdropGlassDrawable.BODY_TOP, BackdropGlassDrawable.BODY_BOTTOM);
         panel.setBackground(glass);   // replaces glass_panel's dark slab
         glass.setBackdrop(blurredBackdrop);
         glassBackdrops.add(glass);
@@ -3755,7 +3863,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private View addSeparator(LinearLayout rows) {
         View line = new View(this);
-        line.setBackgroundColor(0x1FFFFFFF);
+        // auto_ink: a white hairline vanishes on a light panel, so it turns dark with the text.
+        line.setBackgroundColor(inkDark ? 0x1F000000 : 0x1FFFFFFF);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) density);
         int m = (int) (6 * density), h = (int) (12 * density);
         lp.setMargins(h, m, h, m);
@@ -3765,6 +3874,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private View addInputRow(LinearLayout rows, PopupWindow popup, int iconRes, String title, int state, Runnable action) {
         View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        inkRow(row);
         ((ImageView) row.findViewById(R.id.icon)).setImageResource(iconRes);
         ((TextView) row.findViewById(R.id.title)).setText(title);
         TextView status = row.findViewById(R.id.status);
@@ -3792,6 +3902,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** A read-only row in the network menu: the shape of an Inputs row, with nothing to press. */
     private View addInfoRow(LinearLayout rows, int iconRes, String title, String status) {
         View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        inkRow(row);
         ((ImageView) row.findViewById(R.id.icon)).setImageResource(iconRes);
         ((TextView) row.findViewById(R.id.title)).setText(title);
         TextView statusView = row.findViewById(R.id.status);
@@ -4136,6 +4247,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private void addSettingsMenuRow(LinearLayout rows, PopupWindow popup, int title, Runnable action) {
         View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        inkRow(row);
         row.findViewById(R.id.icon).setVisibility(View.GONE);
         row.findViewById(R.id.dot).setVisibility(View.GONE);
         row.findViewById(R.id.status).setVisibility(View.GONE);

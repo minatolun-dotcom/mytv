@@ -298,10 +298,12 @@ circles (inputs, network, reorder, settings), and every popup they open, includi
 remote's Settings key shows. The band's blur is the view's `RenderEffect` (`DockBlurView`); the circles and
 popups draw a shared software-blurred copy of the same picture at their own place on screen, so the frost
 lines up with what is behind each shape. On top of the blur sits the glass itself
-(`BackdropGlassDrawable`, `DockDecoration`): the white body fading downwards, a glint off the top-left
-corner, a dark inner shadow under the top rim that gives it thickness, a bright rim that dims towards the
-bottom, and — in the pills and popups — the frost magnified about 3.5 % about the shape's own centre, so the
-light that crosses the rim looks bent and the shape reads as a lens rather than a pane of tinted glass.
+(`BackdropGlassDrawable`, `DockDecoration`): the white body — 20 % at the top fading to 7 %, one constant
+`BackdropGlassDrawable.BODY_TOP`/`BODY_BOTTOM` the band, the pills and every popup share, so the picture
+behind reads through them and they still frost what it carries — a glint off the top-left corner, a dark
+inner shadow under the top rim that gives it thickness, a bright rim that dims towards the bottom, and — in
+the pills and popups — the frost magnified about 3.5 % about the shape's own centre, so the light that
+crosses the rim looks bent and the shape reads as a lens rather than a pane of tinted glass.
 
 **The blur can only smear what the picture has.** With red-rain's own `wallpaper.jpg` the band and the
 buttons sit over near-pure black: the band's rows measured **0.0011** mean luminance, the button area
@@ -313,15 +315,26 @@ rows, against a 2-row flip outside it. What was tried, in order, and what stuck:
 - **Lifting the rain** (`gamma 0.55`, `add 4%`) and adding a red glow behind the dock and a violet one behind
   the top bar made the glass show *something* (band rows 0.09), but thin text and a smooth glow both blur to
   themselves, so the frost still read as a tinted panel rather than a melted picture.
-- **A picture with large, bright detail behind the glass** is what actually shows a blur. `wallpaper.jpg` is
-  now a black-hole still cropped so its accretion disc runs behind the dock band (band rows **0.44**, bright
-  detail right where the glass sits), with `wallpaper_dim: 45` so the white app name stays legible over it.
-  The band visibly smears the disc; red-rain's rain is kept on the branch's earlier commits only.
+- **A picture with large, bright detail behind the glass** is what actually shows a blur. `wallpaper.jpg`
+  went through two: a black-hole still whose accretion disc ran behind the band (band rows **0.44**, quickly
+  superseded), and now a lilac bloom — glossy petals sweeping across the whole frame, brightest in the top
+  left and across the band, with `wallpaper_dim: 40` to take the glare off. Every glass shape now has real
+  detail to smear, and the band visibly melts the petal edges behind it.
 - **The glass carries its own material** either way, so the shapes read as glass even where the backdrop is
-  dark — the body (28% white fading to 12%), the inner shadow, the bright rim and the 3.5% refraction.
+  dark — the body (20 % white fading to 7 %), the inner shadow, the bright rim and the 3.5 % refraction.
+- **The body was lightened** from 28 %/12 % once the picture went bright: the frost and the detail are both
+  on show, where the heavier white mostly hid the picture behind it.
 
-The lesson for the next wallpaper: choose one with big bright shapes where the dock and the circles sit, and
-check it with `magick wallpaper.jpg -crop 1920x180+0+750 -format '%[fx:mean]' info:` before blaming the blur.
+## 8a. Dark text on a light wallpaper (`auto_ink`)
+
+A bright picture is the one thing white text cannot survive: the clock, the greeting, the date, the app name
+and the popup rows all washed out over the bloom. `auto_ink` measures the picture's top-left zone (where the
+header sits, 16 × 16 samples, Rec. 709 luma, `wallpaper_dim` already applied) and, at a mean of 0.45 or
+above, flips those lines to dark text — each at its designed alpha, so the greeting stays quieter than the
+clock — with a short light halo in place of the long dark one, and dark separators and popup icons to match.
+The Wi-Fi pill is left alone: `wifi_status_color` paints that icon green, orange or red, which reads on a
+light picture as it is. It is judged again on every rotation, so a dark picture in the same collection puts
+the white back.
 
 Verifying a blur claim, rather than trusting a screenshot: put a high-contrast test picture behind the band
 (green above, red below) and sample rows across the band's edge. Outside the band the colour flips green→red
