@@ -674,6 +674,14 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return position >= 0 && position < items.size() ? items.get(position).label : "";
     }
 
+    /**
+     * The tile's own line for the top shelf: an app's label, or a module card's label and caption, since the
+     * card's label may well be the app's own name and then the shelf would say nothing the card added.
+     */
+    String nameAt(int position) {
+        return position >= 0 && position < items.size() ? items.get(position).name : "";
+    }
+
     String packageAt(int position) {
         return position >= 0 && position < items.size() ? items.get(position).pkg : null;
     }

@@ -2107,7 +2107,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     // ---- top shelf -------------------------------------------------------------------------------
 
     private void showHero(int position, float dockTopInRoot) {
-        String label = adapter.labelAt(position);
+        // A module card's label and caption, not just its label: with the dock row's tiles unnamed, this line is
+        // where the owner's "Show" answer is visible at all (MYTV.md, the Updater card).
+        String label = adapter.nameAt(position);
         int color = adapter.ambientColorAt(position);
         float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
         boolean changed = !label.contentEquals(heroName.getText());
